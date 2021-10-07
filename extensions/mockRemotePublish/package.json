@@ -8,7 +8,7 @@
     "watch": "yarn build --watch"
   },
   "composer": {
-    "enabled": false
+    "enabled": true
   },
   "author": "",
   "license": "ISC",

@@ -26,7 +26,10 @@
       "options": {
         "cwd": "Composer/packages/electron-server"
       },
-      "dependsOn": ["server: build", "client: ping"],
+      "dependsOn": [
+        "server: build",
+        "client: ping"
+      ],
       "presentation": {
         "echo": true,
         "reveal": "silent",
@@ -37,10 +40,33 @@
       }
     },
     {
+      "label": "telexy build",
+      "type": "shell",
+      "command": "yarn build",
+      "options": {
+        "cwd": "extensions/telexy"
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "silent",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": false
+      },
+      "problemMatcher": [
+        "$tsc"
+      ]
+    },
+    {
       "label": "client: ping",
       "type": "shell",
       "command": "./node_modules/.bin/wait-on",
-      "args": ["-t", "300000", "http://localhost:3000"],
+      "args": [
+        "-t",
+        "300000",
+        "http://localhost:3000"
+      ],
       "options": {
         "cwd": "Composer"
       },

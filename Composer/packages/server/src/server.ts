@@ -178,7 +178,7 @@ export async function start(electronContext?: ElectronContext): Promise<number |
     port = await portfinder.getPortPromise({ port: preferredPort });
   }
   let server;
-  await new Promise((resolve) => {
+  await new Promise<void>((resolve) => {
     server = app.listen(port, () => {
       if (process.env.NODE_ENV === 'production') {
         // We don't use the debug logger here because we always want it to be shown.

@@ -1,0 +1,28 @@
+{
+  "name": "telexy-bot-composer-ex",
+  "version": "1.0.0",
+  "description": "start bot in telexy runtime",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "watch": "yarn build --watch"
+  },
+  "composer": {
+    "enabled": true
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "@botframework-composer/types": "file:../../Composer/packages/types",
+    "@types/archiver": "^5.1.1",
+    "@types/rimraf": "^3.0.2",
+    "archiver": "^5.0.2",
+    "globby": "^11.0.1",
+    "rimraf": "^3.0.2"
+  },
+  "resolutions": {
+    "@botframework-composer/types": "file:../../Composer/packages/types"
+  },
+  "devDependencies": {
+    "@types/node": "^14.11.2"
+  }
+}

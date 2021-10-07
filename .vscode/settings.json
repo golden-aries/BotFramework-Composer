@@ -28,5 +28,8 @@
       "url": "http://localhost:5000/api/extensions/settings/schema.json"
     }
   ],
-  "json.schemaDownload.enable": true
+  "json.schemaDownload.enable": true,
+  "[typescript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  }
 }
