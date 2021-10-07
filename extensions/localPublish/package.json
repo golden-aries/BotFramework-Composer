@@ -9,6 +9,9 @@
     "build": "node ../scripts/build.js",
     "watch": "yarn build --watch"
   },
+  "composer": {
+    "enabled": false
+  },
   "dependencies": {
     "@botframework-composer/types": "file:../../Composer/packages/types",
     "express": "^4.17.1",

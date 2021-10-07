@@ -10,9 +10,14 @@ import portfinder from 'portfinder';
 import { v4 as uuid } from 'uuid';
 import killPort from 'kill-port';
 import * as tcpPortUsed from 'tcp-port-used';
-import { DialogSetting, PublishPlugin, IExtensionRegistration } from '@botframework-composer/types';
-
-import { RuntimeLogServer } from './runtimeLogServer';
+import {
+  DialogSetting,
+  PublishPlugin,
+  IExtensionRegistration,
+  IBotProject,
+  UserIdentity,
+} from '@botframework-composer/types';
+import { RuntimeLogServer } from './telexyRuntimeLogServer';
 
 interface RunningBot {
   process?: ChildProcess;
@@ -51,7 +56,7 @@ const stringifyError = (error: any): string => {
   }
 };
 
-class LocalPublisher implements PublishPlugin<PublishConfig> {
+export class TelexyPublisher implements PublishPlugin<PublishConfig> {
   public name = 'localpublish';
   public description = 'Publish bot to local runtime';
   static runningBots: { [key: string]: RunningBot } = {};
@@ -63,17 +68,17 @@ class LocalPublisher implements PublishPlugin<PublishConfig> {
 
   private setBotStatus = (botId: string, data: RunningBot) => {
     const updatedBotData: RunningBot = {
-      ...LocalPublisher.runningBots[botId],
+      ...TelexyPublisher.runningBots[botId],
       status: data.status,
     };
 
     this.composer.log(`SETTING STATUS OF ${botId} to port ${data.port} and status ${data.status}`);
     // preserve the pid and port if one is available
-    if (data.process && !LocalPublisher.runningBots[botId]?.process) {
+    if (data.process && !TelexyPublisher.runningBots[botId]?.process) {
       updatedBotData.process = data.process;
     }
 
-    if (data.port && !LocalPublisher.runningBots[botId]?.port) {
+    if (data.port && !TelexyPublisher.runningBots[botId]?.port) {
       updatedBotData.port = data.port;
     }
 
@@ -83,14 +88,14 @@ class LocalPublisher implements PublishPlugin<PublishConfig> {
         message: data.result.message,
       };
     }
-    LocalPublisher.runningBots[botId] = updatedBotData;
+    TelexyPublisher.runningBots[botId] = updatedBotData;
   };
 
   private appendRuntimeLogs = (botId: string, newContent: string, logType: 'stdout' | 'stderr' = 'stdout') => {
-    const botData = LocalPublisher.runningBots[botId];
+    const botData = TelexyPublisher.runningBots[botId];
     if (logType === 'stdout') {
       const runtimeLog = botData.result.runtimeLog ? botData.result.runtimeLog + newContent : newContent;
-      LocalPublisher.runningBots[botId] = {
+      TelexyPublisher.runningBots[botId] = {
         ...botData,
         result: {
           ...botData.result,
@@ -99,7 +104,7 @@ class LocalPublisher implements PublishPlugin<PublishConfig> {
       };
     } else {
       const runtimeError = botData.result.runtimeError ? botData.result.runtimeError + newContent : newContent;
-      LocalPublisher.runningBots[botId] = {
+      TelexyPublisher.runningBots[botId] = {
         ...botData,
         result: {
           ...botData.result,
@@ -109,14 +114,14 @@ class LocalPublisher implements PublishPlugin<PublishConfig> {
     }
     RuntimeLogServer.sendRuntimeLogToSubscribers(
       botId,
-      LocalPublisher.runningBots[botId].result.runtimeLog ?? '',
-      LocalPublisher.runningBots[botId].result.runtimeError ?? ''
+      TelexyPublisher.runningBots[botId].result.runtimeLog ?? '',
+      TelexyPublisher.runningBots[botId].result.runtimeError ?? ''
     );
   };
 
   private isPortUsed = (port: number) => {
-    for (const key in LocalPublisher.runningBots) {
-      const bot = LocalPublisher.runningBots[key];
+    for (const key in TelexyPublisher.runningBots) {
+      const bot = TelexyPublisher.runningBots[key];
       if (bot?.port === port) {
         return true;
       }
@@ -124,18 +129,24 @@ class LocalPublisher implements PublishPlugin<PublishConfig> {
     return false;
   };
 
-  private publishAsync = async (botId: string, version: string, fullSettings: DialogSetting, project: any, user) => {
+  private publishAsync = async (
+    botId: string,
+    version: string,
+    fullSettings: DialogSetting,
+    project: any,
+    user: any
+  ) => {
     try {
       let port;
-      if (LocalPublisher.runningBots[botId]) {
+      if (TelexyPublisher.runningBots[botId]) {
         this.composer.log('Bot already running. Stopping bot...');
         // this may or may not be set based on the status of the bot
-        port = LocalPublisher.runningBots[botId].port;
+        port = TelexyPublisher.runningBots[botId].port;
         await this.stopBot(botId);
       }
       if (!port) {
         // Portfinder is the stablest amongst npm libraries for finding ports. https://github.com/http-party/node-portfinder/issues/61. It does not support supplying an array of ports to pick from as we can have a race conidtion when starting multiple bots at the same time. As a result, getting the max port number out of the range and starting the range from the max.
-        const maxPort = max(map(LocalPublisher.runningBots, 'port')) ?? 3979;
+        const maxPort = max(map(TelexyPublisher.runningBots, 'port')) ?? 3979;
         const retry = 10;
         let i = 0;
         do {
@@ -144,10 +155,10 @@ class LocalPublisher implements PublishPlugin<PublishConfig> {
         } while (this.isPortUsed(port) && i < retry);
 
         const updatedBotData: RunningBot = {
-          ...LocalPublisher.runningBots[botId],
+          ...TelexyPublisher.runningBots[botId],
           port,
         };
-        LocalPublisher.runningBots[botId] = updatedBotData;
+        TelexyPublisher.runningBots[botId] = updatedBotData;
       }
 
       const runtime = this.composer.getRuntimeByProject(project);
@@ -170,7 +181,7 @@ class LocalPublisher implements PublishPlugin<PublishConfig> {
   };
 
   // config include botId and version, project is content
-  publish = async (config: PublishConfig, project, metadata, user): Promise<any> => {
+  publish = async (config: PublishConfig, project: IBotProject, metadata: any, user?: UserIdentity): Promise<any> => {
     const { fullSettings } = config;
     const botId = project.id;
     const version = 'default';
@@ -178,7 +189,7 @@ class LocalPublisher implements PublishPlugin<PublishConfig> {
     this.composer.log('Starting publish');
 
     // set the running bot status
-    this.setBotStatus(botId, {
+    this.setBotStatus(botId!, {
       status: 202,
       result: { message: 'Reloading...' },
     });
@@ -186,7 +197,7 @@ class LocalPublisher implements PublishPlugin<PublishConfig> {
     try {
       // start or restart the bot process
       // do NOT await this, as it can take a long time
-      this.publishAsync(botId, version, fullSettings, project, user);
+      this.publishAsync(botId!, version, fullSettings, project, user);
       return {
         status: 202,
         result: {
@@ -203,11 +214,11 @@ class LocalPublisher implements PublishPlugin<PublishConfig> {
       };
     }
   };
-  getStatus = async (config: PublishConfig, project, user) => {
+  getStatus = async (config: PublishConfig, project: any, user: any) => {
     const botId = project.id;
-    if (LocalPublisher.runningBots[botId]) {
-      if (LocalPublisher.runningBots[botId].status === 200) {
-        const port = LocalPublisher.runningBots[botId].port;
+    if (TelexyPublisher.runningBots[botId]) {
+      if (TelexyPublisher.runningBots[botId].status === 200) {
+        const port = TelexyPublisher.runningBots[botId].port;
         const url = `http://localhost:${port}`;
         return {
           status: 200,
@@ -219,12 +230,12 @@ class LocalPublisher implements PublishPlugin<PublishConfig> {
         };
       } else {
         const publishResult = {
-          status: LocalPublisher.runningBots[botId].status,
-          result: LocalPublisher.runningBots[botId].result,
+          status: TelexyPublisher.runningBots[botId].status,
+          result: TelexyPublisher.runningBots[botId].result,
         };
-        if (LocalPublisher.runningBots[botId].status === 500) {
+        if (TelexyPublisher.runningBots[botId].status === 500) {
           // after we return the 500 status once, delete it out of the running bots list.
-          delete LocalPublisher.runningBots[botId];
+          delete TelexyPublisher.runningBots[botId];
         }
         return publishResult;
       }
@@ -250,7 +261,7 @@ class LocalPublisher implements PublishPlugin<PublishConfig> {
       // if a port (e.g. --port 5000) is configured in the custom runtime command try to parse and set this port
       if (settings.runtime.command && settings.runtime.command.includes('--port')) {
         try {
-          port = parseInt(/--port (\d+)/.exec(settings.runtime.command)[1]);
+          port = parseInt(/--port (\d+)/.exec(settings.runtime.command)![1]);
         } catch (err) {
           console.warn(`Custom runtime command has an invalid port argument.`);
         }
@@ -294,7 +305,7 @@ class LocalPublisher implements PublishPlugin<PublishConfig> {
         skillHostEndpoint = `http://127.0.0.1:${port}/api/skills`;
       }
       config = this.getConfig(settings, skillHostEndpoint);
-      let spawnProcess;
+      let spawnProcess: any;
       const args = [...commandAndArgs, '--port', port, `--urls`, `http://0.0.0.0:${port}`, ...config];
       this.composer.log('Executing command with arguments: %s %s', startCommand, args.join(' '));
       try {
@@ -364,8 +375,8 @@ class LocalPublisher implements PublishPlugin<PublishConfig> {
   };
 
   private removeListener = (child: ChildProcess) => {
-    child.stdout.removeAllListeners('data');
-    child.stderr.removeAllListeners('data');
+    child.stdout!.removeAllListeners('data');
+    child.stderr!.removeAllListeners('data');
 
     child.removeAllListeners('message');
     child.removeAllListeners('error');
@@ -394,7 +405,7 @@ class LocalPublisher implements PublishPlugin<PublishConfig> {
     child.on('exit', (code) => {
       if (code !== 0) {
         logger('error on exit: %s, exit code %d', errOutput, code);
-        if (LocalPublisher.runningBots[botId].status === 200) {
+        if (TelexyPublisher.runningBots[botId].status === 200) {
           this.appendRuntimeLogs(botId, errOutput, 'stderr');
         }
         this.setBotStatus(botId, {
@@ -418,8 +429,8 @@ class LocalPublisher implements PublishPlugin<PublishConfig> {
 
   // make it public, so that able to stop runtime before switch ejected runtime.
   public stopBot = async (botId: string) => {
-    const proc = LocalPublisher.runningBots[botId]?.process;
-    const port = LocalPublisher.runningBots[botId]?.port;
+    const proc = TelexyPublisher.runningBots[botId]?.process;
+    const port = TelexyPublisher.runningBots[botId]?.port;
 
     if (port) {
       this.composer.log('Killing process at port %d', port);
@@ -431,10 +442,10 @@ class LocalPublisher implements PublishPlugin<PublishConfig> {
               if (proc) {
                 this.removeListener(proc);
               }
-              delete LocalPublisher.runningBots[botId];
+              delete TelexyPublisher.runningBots[botId];
               resolve('Stopped');
             })
-            .catch((err) => {
+            .catch((err: any) => {
               reject(err);
             });
         }, 1000);
@@ -443,28 +454,22 @@ class LocalPublisher implements PublishPlugin<PublishConfig> {
   };
 
   static stopAll = () => {
-    for (const botId in LocalPublisher.runningBots) {
-      const bot = LocalPublisher.runningBots[botId];
+    for (const botId in TelexyPublisher.runningBots) {
+      const bot = TelexyPublisher.runningBots[botId];
       // Kill the bot process AND all child processes
       try {
-        process.kill(isWin ? bot.process.pid : -bot.process.pid);
+        process.kill(isWin ? bot.process!.pid : -bot.process!.pid);
       } catch (err) {
         // swallow this error which happens if the child process is already gone
       }
-      delete LocalPublisher.runningBots[botId];
+      delete TelexyPublisher.runningBots[botId];
     }
   };
 }
 
-export default async (composer: IExtensionRegistration): Promise<void> => {
-  const publisher = new LocalPublisher(composer);
-  // register this publishing method with Composer
-  await composer.addPublishMethod(publisher);
-};
-
 // stop all the runningBot when process exit
 const cleanup = () => {
-  LocalPublisher.stopAll();
+  TelexyPublisher.stopAll();
   process.exit(0);
 };
 
