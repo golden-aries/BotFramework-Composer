@@ -11,7 +11,7 @@ import * as fs from 'fs-extra';
 
 import { copyDir } from './copyDir';
 import { IFileStorage } from './interface';
-import { logger } from './../common/interfaces';
+import { IBotComposerLogger } from './../common/interfaces';
 
 const execAsync = promisify(exec);
 const removeDirAndFiles = promisify(rimraf);
@@ -25,7 +25,7 @@ const execTimeout = 5 * 60 * 1000; // timeout after 5 minutes
  * @param value value of key
  * @param cwd path where the command will be run
  */
-const writeLocalFunctionsSetting = async (name: string, value: string, cwd: string, log: logger) => {
+const writeLocalFunctionsSetting = async (name: string, value: string, cwd: string, log: IBotComposerLogger) => {
   // only set if there is both a setting and a value.
   if (name && value && cwd) {
     const { stderr: err } = await execAsync(`func settings add ${name} ${value}`, { cwd: cwd });
@@ -40,7 +40,7 @@ const writeAllLocalFunctionsSettings = async (
   fullSettings: DialogSetting,
   port: number,
   runtimePath: string,
-  log: logger
+  log: IBotComposerLogger
 ) => {
   await writeLocalFunctionsSetting('MicrosoftAppPassword', fullSettings.MicrosoftAppPassword!, runtimePath, log);
   await writeLocalFunctionsSetting(
