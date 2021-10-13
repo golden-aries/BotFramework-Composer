@@ -4,5 +4,5 @@
 [](./../../../../Composer/packages/server/src/models/storage/localDiskStorage.ts)
 # mongoStorage
 [](./../../../../extensions/mongoStorage/src/index.ts)
-[](./../../../../extensions/mongoStorage/src/interfaces.ts)
+[](./../../../../extensions/mongoStorage/src/interface.ts)
 
