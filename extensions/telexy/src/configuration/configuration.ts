@@ -1,27 +1,28 @@
 import path from 'path';
 import os from 'os';
 import fs from 'fs/promises';
-import { isTelexyBotComposerExtensionSettings, ITelexyBotComposerExtensionSettings } from '../common/interfaces';
+import { ITelexySettings } from '../common/interfaces';
+import merge from 'lodash/merge';
 
 export interface IConfiguration {
-  getSettings(): Promise<ITelexyBotComposerExtensionSettings>;
+  getSettings(): Promise<ITelexySettings>;
 }
 
 export class Configuration implements IConfiguration {
-  _cachedSettings: Promise<ITelexyBotComposerExtensionSettings> | undefined;
+  // _cachedSettings: Promise<ITelexyBotComposerExtensionSettings> | undefined;
 
-  async getSettings(): Promise<ITelexyBotComposerExtensionSettings> {
-    return this._cachedSettings ? this._cachedSettings : await this._getSettings();
+  async getSettings(): Promise<ITelexySettings> {
+    //return this._cachedSettings ? this._cachedSettings : await this._getSettings();
+    return this._getSettings();
   }
 
-  private async _getSettings(): Promise<ITelexyBotComposerExtensionSettings> {
+  private async _getSettings(): Promise<ITelexySettings> {
     const fileName = this.configurationFileName;
     try {
       const content = await fs.readFile(fileName);
       const obj = JSON.parse(content.toString());
-      if (isTelexyBotComposerExtensionSettings(obj)) {
-        return obj;
-      }
+      const result = merge<ITelexySettings, ITelexySettings>(Configuration.defaultSettings, obj);
+      return result;
     } catch (err) {
       // ignore errors
     }
@@ -39,11 +40,13 @@ export class Configuration implements IConfiguration {
     return result;
   }
 
-  static defaultSettings: ITelexyBotComposerExtensionSettings = {
-    cloudUrl: 'http::/localhost',
-    apiKey: '',
-    logTrace: true,
-  };
+  static get defaultSettings(): ITelexySettings {
+    return {
+      cloudUrl: 'http::/localhost',
+      apiKey: '',
+      logTrace: true,
+    };
+  }
 }
 
 export const configuration: IConfiguration = new Configuration();

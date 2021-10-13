@@ -8,12 +8,12 @@ export interface ILogger {
   logTrace: (message?: any, ...optionalParams: any[]) => void;
 }
 
-export interface ITelexyBotComposerExtensionSettings {
+export interface ITelexySettings {
   cloudUrl: string;
   apiKey: string;
   logTrace: boolean;
 }
 
-export function isTelexyBotComposerExtensionSettings(obj: any): obj is ITelexyBotComposerExtensionSettings {
+export function isTelexyBotComposerExtensionSettings(obj: any): obj is ITelexySettings {
   return obj && 'cloudUrl' in obj && 'apiKey' in obj && 'logTrace' in obj;
 }
