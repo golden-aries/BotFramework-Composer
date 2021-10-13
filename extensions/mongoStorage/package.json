@@ -2,13 +2,13 @@
   "name": "mongoStorage",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/extension.js",
+  "main": "lib/index.js",
   "scripts": {
-    "build": "node ../scripts/build.js",
+    "build": "tsc",
     "watch": "yarn build --watch"
   },
   "composer": {
-    "enabled": false
+    "enabled": true
   },
   "author": "benbro@microsoft.com",
   "license": "MIT",

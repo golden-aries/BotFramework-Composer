@@ -59,6 +59,25 @@
       ]
     },
     {
+      "label": "mongo build",
+      "type": "shell",
+      "command": "yarn build",
+      "options": {
+        "cwd": "extensions/mongoStorage"
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "silent",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": false
+      },
+      "problemMatcher": [
+        "$tsc"
+      ]
+    },
+    {
       "label": "client: ping",
       "type": "shell",
       "command": "./node_modules/.bin/wait-on",

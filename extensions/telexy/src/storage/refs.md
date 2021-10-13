@@ -6,3 +6,6 @@
 [](./../../../../extensions/mongoStorage/src/index.ts)
 [](./../../../../extensions/mongoStorage/src/interface.ts)
 
+# notice: sync IStorageFunctions are used in projects service
+[](./../../../../Composer/packages/server/src/services/project.ts)
+
