@@ -10,8 +10,8 @@ import rimraf from 'rimraf';
 import * as fs from 'fs-extra';
 
 import { copyDir } from './copyDir';
-import { IFileStorage } from './interface';
 import { IBotComposerLogger } from './../common/interfaces';
+import { IFileStorage } from './interface';
 
 const execAsync = promisify(exec);
 const removeDirAndFiles = promisify(rimraf);
