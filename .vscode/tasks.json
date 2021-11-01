@@ -59,6 +59,25 @@
       ]
     },
     {
+      "label": "telexy watch",
+      "type": "shell",
+      "command": "yarn watch",
+      "options": {
+        "cwd": "extensions/telexy"
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "silent",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": false
+      },
+      "problemMatcher": [
+        "$tsc"
+      ]
+    },
+    {
       "label": "mongo build",
       "type": "shell",
       "command": "yarn build",

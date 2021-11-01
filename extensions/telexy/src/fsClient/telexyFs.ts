@@ -7,7 +7,7 @@
 //----------------------
 // ReSharper disable InconsistentNaming
 
-import { ISettings } from '../common/interfaces';
+import { ILogger, ISettings } from '../common/interfaces';
 import { ApiException } from '../exceptions/telexyExceptions';
 import { IFetch } from '../common/interfaces';
 import { RequestOptionsBuilder } from './requestOptionsBuilder';
@@ -16,10 +16,9 @@ export class CMFusionFSDataSourceClient {
   protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
   baseUrl: string;
 
-  constructor(protected settings: ISettings, protected http: IFetch) {
+  constructor(protected settings: ISettings, protected http: IFetch, protected logger: ILogger) {
     this.http = http ? http : <any>window;
     this.baseUrl = settings.baseUrl;
-    this.settings = settings;
   }
 
   protected getBuilder() {
@@ -123,8 +122,13 @@ export class CMFusionFSDataSourceClient {
   }
 
   async stat(path: string): Promise<FileStat> {
-    const response = await this.http.fetch(this.getStatUrl(path), this.getStatOptionsBuilder().buildRequestInit());
-    return await this.processStat(response);
+    try {
+      const response = await this.http.fetch(this.getStatUrl(path), this.getStatOptionsBuilder().buildRequestInit());
+      return await this.processStat(response);
+    } catch (err) {
+      this.logger.logError(err);
+      throw err;
+    }
   }
 
   protected async processStat(response: Response): Promise<FileStat> {

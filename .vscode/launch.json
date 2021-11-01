@@ -53,7 +53,8 @@
       "name": "Server: Launch",
       "program": "${workspaceFolder}/Composer/packages/server/build/init.js",
       "env": {
-        "DEBUG": "composer*"
+        "DEBUG": "composer*",
+        "COMPOSER_BOTS_FOLDER" : "/"
       },
       "restart": true,
       "outFiles": [

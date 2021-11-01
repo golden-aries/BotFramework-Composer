@@ -1,8 +1,7 @@
-import { ISettings } from '../common/interfaces';
-import { IFetch } from '../common/interfaces';
+import { ILogger, ISettings, IFetch } from '../common/interfaces';
 import { CMFusionFSDataSourceClient } from './telexyFs';
 export class TelexyFsClient extends CMFusionFSDataSourceClient {
-  constructor(settings: ISettings, http: IFetch) {
-    super(settings, http);
+  constructor(settings: ISettings, http: IFetch, logger: ILogger) {
+    super(settings, http, logger);
   }
 }

@@ -1,6 +1,6 @@
 import { IncomingHttpHeaders } from 'http';
 import syncRequest, { Options, Response } from 'sync-request';
-import { ISettings } from '../common/interfaces';
+import { ILogger, ISettings } from '../common/interfaces';
 import { ApiException } from '../exceptions/telexyExceptions';
 import { IFetch } from '../common/interfaces';
 import { CMFusionFSItemWrapper, FileStat, IGlobParametersWrapper } from './telexyFs';
@@ -10,8 +10,8 @@ export class TelexyFsClientSync extends TelexyFsClient {
   /**
    *
    */
-  constructor(settings: ISettings, fetch: IFetch) {
-    super(settings, fetch);
+  constructor(settings: ISettings, fetch: IFetch, logger: ILogger) {
+    super(settings, fetch, logger);
   }
 
   private syncPost(url: string, options: Options): Options | Response {

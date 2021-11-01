@@ -28,7 +28,7 @@ function defaultSettings(): ISettings {
 
 /** returns default (hard coded) storage file name */
 function defaultConfigurationFileName(): string {
-  const result = path.join(os.homedir(), '.telexy', 'telexyFsTest.json');
+  const result = path.join(os.homedir(), '.telexy', 'botFrameworkComposerConfig.json');
   return result;
 }
 
@@ -52,7 +52,7 @@ function getFetch(): IFetch {
 }
 
 export function initTelexyFsClientSync(): TelexyFsClientSync {
-  return telexyFsClientSync ?? (telexyFsClientSync = new TelexyFsClientSync(settings, getFetch()));
+  return telexyFsClientSync ?? (telexyFsClientSync = new TelexyFsClientSync(settings, getFetch(), logger));
 }
 
 export class Storage extends TelexyStorageSync {
@@ -61,5 +61,6 @@ export class Storage extends TelexyStorageSync {
    */
   constructor() {
     super(telexyFsClientSync, logger);
+    logger.logTrace('Telexy Storage Created!');
   }
 }

@@ -3,10 +3,15 @@ export interface IBotComposerLogger {
 }
 
 export interface ILogger {
+  log: (logLevel: LogLevel, message?: any, ...optionalParams: any[]) => void;
   logInformation: (message?: any, ...optionalParams: any[]) => void;
   logError: (message?: any, ...optionalParams: any[]) => void;
   logTrace: (message?: any, ...optionalParams: any[]) => void;
+  logDebug: (message?: any, ...optionalParams: any[]) => void;
+  logWarning: (message?: any, ...optionalParams: any[]) => void;
+  logCritical: (message?: any, ...optionalParams: any[]) => void;
 }
+
 export interface ISettings {
   baseUrl: string;
   apiKey: string;
