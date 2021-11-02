@@ -4,6 +4,9 @@
     "rootDir": "./src",
     "outDir": "./build/",
     "sourceMap": true,
+    "declarationMap": true,
+    "declaration": true,
+    "esModuleInterop": true,
     "target": "es6"
   },
   "include": ["src"]

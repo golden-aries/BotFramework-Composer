@@ -1,9 +1,12 @@
-export class TelexyException extends Error {
+import { logger } from '../services/serviceProvider';
+export class BaseError extends Error {
+  public data = new Map();
   /**
    *
    */
-  constructor(public exeptionId: string, public message: string, public data: any) {
-    super();
+  constructor(public exceptionId: string, message?: string, public originalError?: unknown) {
+    super(message ?? exceptionId);
+    logger.logTrace('%s\n%o', message, originalError);
   }
 
   static PathIsNotAFile: string = 'Path is not a file!';
@@ -13,53 +16,53 @@ export class TelexyException extends Error {
   static UnknownError: string = 'Unknown Error Encountered';
 }
 
-export class UnknownErrorException extends TelexyException {
+export class UnknownError extends BaseError {
   /**
    *
    */
-  constructor(err: unknown) {
-    super(TelexyException.UnknownError, TelexyException.UnknownError, err);
+  constructor(err: unknown, message?: string) {
+    super(BaseError.UnknownError, message, err);
   }
 }
-export class PathIsNotAFileException extends TelexyException {
+export class PathIsNotAFileException extends BaseError {
   /**
    *
    */
   constructor(public path: string) {
-    super(TelexyException.PathIsNotAFile, TelexyException.PathIsNotAFile, path);
+    super(BaseError.PathIsNotAFile, BaseError.PathIsNotAFile, path);
   }
 }
 
-export class PathIsNotADirectoryException extends TelexyException {
+export class PathIsNotADirectoryException extends BaseError {
   /**
    *
    */
   constructor(public path: string) {
-    super(TelexyException.PathNotADirectory, TelexyException.PathNotADirectory, path);
+    super(BaseError.PathNotADirectory, BaseError.PathNotADirectory, path);
   }
 }
 
 /**
  * Not Implemented Exception!
  */
-export class NotImplementedException extends TelexyException {
+export class NotImplementedException extends BaseError {
   /**
    *
    */
   constructor(details: string) {
-    super(TelexyException.NotIplemented, TelexyException.NotIplemented, details);
+    super(BaseError.NotIplemented, BaseError.NotIplemented, details);
   }
 }
 
 /**
  * Not Implemented Exception!
  */
-export class NotAClassException extends TelexyException {
+export class NotAClassException extends BaseError {
   /**
    *
    */
   constructor(obj: string) {
-    super(TelexyException.NotAClass, TelexyException.NotAClass, obj);
+    super(BaseError.NotAClass, BaseError.NotAClass, obj);
   }
 }
 

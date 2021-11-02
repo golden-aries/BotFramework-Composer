@@ -29,7 +29,6 @@ export class TelexyFsClientSync extends TelexyFsClient {
 
   statSync(path: string): FileStat {
     const response = this.syncPost(this.getStatUrl(path), this.getStatOptionsBuilder().buildSyncOptions());
-
     return this.processStatSync(<Response>response);
   }
 

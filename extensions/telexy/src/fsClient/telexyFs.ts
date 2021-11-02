@@ -7,9 +7,8 @@
 //----------------------
 // ReSharper disable InconsistentNaming
 
-import { ILogger, ISettings } from '../common/interfaces';
+import { IFetch, ILogger, ISettings } from '../common/interfaces';
 import { ApiException } from '../exceptions/telexyExceptions';
-import { IFetch } from '../common/interfaces';
 import { RequestOptionsBuilder } from './requestOptionsBuilder';
 
 export class CMFusionFSDataSourceClient {
@@ -24,11 +23,6 @@ export class CMFusionFSDataSourceClient {
   protected getBuilder() {
     return new RequestOptionsBuilder(this.settings.apiKey);
   }
-
-  // protected getDefaultRequestBuilder(): RequestOptionsBuilder {
-  //    return this.getBuilder()
-  //             .withHeader_Accept_ApplicationJson();
-  // }
 
   private _getUrl(path: string, actionUrl: string): string {
     let url = this.baseUrl + actionUrl;
@@ -122,13 +116,8 @@ export class CMFusionFSDataSourceClient {
   }
 
   async stat(path: string): Promise<FileStat> {
-    try {
-      const response = await this.http.fetch(this.getStatUrl(path), this.getStatOptionsBuilder().buildRequestInit());
-      return await this.processStat(response);
-    } catch (err) {
-      this.logger.logError(err);
-      throw err;
-    }
+    const response = await this.http.fetch(this.getStatUrl(path), this.getStatOptionsBuilder().buildRequestInit());
+    return await this.processStat(response);
   }
 
   protected async processStat(response: Response): Promise<FileStat> {
