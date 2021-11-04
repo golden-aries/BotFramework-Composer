@@ -1,18 +1,21 @@
 import path from 'path';
-import { IFetch, ILogger, ISettings, LogLevel } from '../common/interfaces';
+import { IFetch, ILogger, IPathConvertor, ISettings, LogLevel } from '../common/interfaces';
 import { IConfiguration } from '../configuration/abstractions';
 import { JsonConfiguration } from '../configuration/jsonConfiguration';
 import { TelexyFsClientSync } from '../fsClient/TelexyFsClientSync';
 import { TelexyStorageSync } from '../fsClient/telexyStorageSync';
 import { ConsoleLogger } from '../log/logger';
 import os from 'os';
+import { PathConvertor } from '../fsClient/pathConvertor';
 
 export let settings: ISettings;
 export let logger: ILogger;
+export let pathConvertor: IPathConvertor;
 let telexyFsClientSync: TelexyFsClientSync;
 
 export async function initServices() {
   await initSettings();
+  pathConvertor = new PathConvertor(settings.localRoot);
   logger = new ConsoleLogger(settings);
   initTelexyFsClientSync();
   logger.logTrace('Telexy Services Initialized');
@@ -23,6 +26,7 @@ function defaultSettings(): ISettings {
     baseUrl: 'http://localhost',
     apiKey: '',
     logLevel: LogLevel.Warning,
+    localRoot: os.homedir(),
   };
 }
 
@@ -60,7 +64,7 @@ export class Storage extends TelexyStorageSync {
    *
    */
   constructor() {
-    super(telexyFsClientSync, logger);
+    super(telexyFsClientSync, logger, pathConvertor);
     logger.logTrace('Telexy Storage Created!');
   }
 }

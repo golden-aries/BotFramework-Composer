@@ -20,8 +20,8 @@ export class UnknownError extends BaseError {
   /**
    *
    */
-  constructor(err: unknown, message?: string) {
-    super(BaseError.UnknownError, message, err);
+  constructor(originalError?: unknown, message?: string) {
+    super(BaseError.UnknownError, message, originalError);
   }
 }
 export class PathIsNotAFileException extends BaseError {

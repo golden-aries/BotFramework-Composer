@@ -1,4 +1,4 @@
-import { ILogger, MakeDirectoryOptions, Stat } from '../common/interfaces';
+import { ILogger, IPathConvertor, MakeDirectoryOptions, Stat } from '../common/interfaces';
 import { UnknownError } from '../exceptions/telexyExceptions';
 
 //import { Stat, MakeDirectoryOptions } from '../../../../Composer/packages/server/src/models/storage/interface';
@@ -9,14 +9,15 @@ export class TelexyStorageSync extends TelexyStorage {
   /**
    *
    */
-  constructor(protected client: TelexyFsClientSync, protected logger: ILogger) {
-    super(client, logger);
+  constructor(protected client: TelexyFsClientSync, logger: ILogger, pathConvertor: IPathConvertor) {
+    super(client, logger, pathConvertor);
   }
 
   statSync(path: string): Stat {
     try {
       this.logger.logTrace('statSync %s', path);
-      const result = this.client.statSync(path);
+      const convertedPath = this.pathConvertor.toStoragePath(path);
+      const result = this.client.statSync(convertedPath);
       return this.toStat(result);
     } catch (err) {
       throw new UnknownError(err, 'Error occured during storage API statSync call!');
@@ -26,7 +27,8 @@ export class TelexyStorageSync extends TelexyStorage {
   readFileSync(path: string): string {
     try {
       this.logger.logTrace('readFileSync %s', path);
-      return this.client.readFileSync(path);
+      const convertedPath = this.pathConvertor.toStoragePath(path);
+      return this.client.readFileSync(convertedPath);
     } catch (err) {
       throw new UnknownError(err, 'Error occured during storage API readFileSync call!');
     }
@@ -35,9 +37,9 @@ export class TelexyStorageSync extends TelexyStorage {
   readDirSync(path: string): string[] {
     try {
       this.logger.logTrace('readDirSync %s', path);
-      let transformedPath = this.transformAndCheckPath(path);
+      const convertedPath = this.pathConvertor.toStoragePath(path);
       var result = this.client.browseSync(path);
-      return this.getReadDirResult(result, transformedPath);
+      return this.getReadDirResult(result, convertedPath);
     } catch (err) {
       throw new UnknownError(err, 'Error occured during storage API readDirSync call!');
     }
@@ -46,7 +48,8 @@ export class TelexyStorageSync extends TelexyStorage {
   existsSync(path: string): boolean {
     try {
       this.logger.logTrace('existsSync %s', path);
-      this.client.statSync(path);
+      const convertedPath = this.pathConvertor.toStoragePath(path);
+      this.client.statSync(convertedPath);
       return true;
     } catch {
       return false;
@@ -56,7 +59,8 @@ export class TelexyStorageSync extends TelexyStorage {
   writeFileSync(path: string, content: any): void {
     try {
       this.logger.logTrace('writeFileSync %s', path);
-      this.client.writeFile(this.getWrapperForWriteFile(path, content));
+      const convertedPath = this.pathConvertor.toStoragePath(path);
+      this.client.writeFile(this.getWrapperForWriteFile(convertedPath, content));
     } catch (err) {
       throw new UnknownError(err, 'Error occured during storage API writeFileSync call!');
     }
@@ -65,9 +69,9 @@ export class TelexyStorageSync extends TelexyStorage {
   removeFileSync(path: string): void {
     try {
       this.logger.logTrace('removeFileSync %s', path);
-      const normalizedPath = this.transformAndCheckPath(path);
-      const stat = this.client.statSync(normalizedPath);
-      this.client.delete(this.getWrapperForRemoveFile(stat, path));
+      const convertedPath = this.pathConvertor.toStoragePath(path);
+      const stat = this.client.statSync(convertedPath);
+      this.client.delete(this.getWrapperForRemoveFile(stat, convertedPath));
     } catch (err) {
       throw new UnknownError(err, 'Error occured during storage API removeFileSync call!');
     }
@@ -76,7 +80,8 @@ export class TelexyStorageSync extends TelexyStorage {
   mkDirSync(path: string, options?: MakeDirectoryOptions): void {
     try {
       this.logger.logTrace('mdkDirSync %s', path);
-      this.client.create(this.getWrapperForMkDir(path));
+      const convertedPath = this.pathConvertor.toStoragePath(path);
+      this.client.create(this.getWrapperForMkDir(convertedPath));
     } catch (err) {
       throw new UnknownError(err, 'Error occured during storage API mkDirSync call!');
     }
@@ -85,8 +90,9 @@ export class TelexyStorageSync extends TelexyStorage {
   rmDirSync(path: string): void {
     try {
       this.logger.logTrace('rmDirSync %s', path);
-      const stat = this.client.statSync(path);
-      this.client.delete(this.getWrpapperForRmDir(stat, path));
+      const convertedPath = this.pathConvertor.toStoragePath(path);
+      const stat = this.client.statSync(convertedPath);
+      this.client.delete(this.getWrpapperForRmDir(stat, convertedPath));
     } catch (err) {
       throw new UnknownError(err, 'Error occured during storage API rmDirSync call!');
     }
@@ -99,7 +105,9 @@ export class TelexyStorageSync extends TelexyStorage {
   globSync(pattern: string | string[], path: string): string[] {
     try {
       this.logger.logTrace('globSync %s %o', path, pattern);
-      return this.client.globSync(this.getWrapperForGlob(pattern, path));
+      const convertedPath = this.pathConvertor.toStoragePath(path);
+      const results = this.client.globSync(this.getWrapperForGlob(pattern, convertedPath));
+      return this.transformGlobResults(results);
     } catch (err) {
       throw new UnknownError(err, 'Error occured during storage API globSync call!');
     }

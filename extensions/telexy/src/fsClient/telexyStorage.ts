@@ -1,6 +1,5 @@
-import { IFileStorage, ILogger, MakeDirectoryOptions, Stat } from '../common/interfaces';
+import { IFileStorage, ILogger, IPathConvertor, MakeDirectoryOptions, Stat } from '../common/interfaces';
 import { PathIsNotADirectoryException, PathIsNotAFileException, UnknownError } from '../exceptions/telexyExceptions';
-
 //import { IFileStorage, Stat, MakeDirectoryOptions } from '../../../../Composer/packages/server/src/models/storage/interface';
 import { CMFusionFSItemWrapper, FileStat, GlobParametersWrapper } from './telexyFs';
 import { TelexyFsClient } from './telexyFsClient';
@@ -9,7 +8,7 @@ export class TelexyStorage implements IFileStorage {
   /**
    *
    */
-  constructor(protected client: TelexyFsClient, protected logger: ILogger) {}
+  constructor(protected client: TelexyFsClient, protected logger: ILogger, protected pathConvertor: IPathConvertor) {}
 
   async stat(path: string): Promise<Stat> {
     try {
@@ -38,7 +37,8 @@ export class TelexyStorage implements IFileStorage {
   async readFile(path: string): Promise<string> {
     try {
       this.logger.logTrace('readFile %s', path);
-      const result = await this.client.readFile(path);
+      const convertedPath = this.pathConvertor.toStoragePath(path);
+      const result = await this.client.readFile(convertedPath);
       return result.data.text();
     } catch (err) {
       throw new UnknownError(err, 'Error occured during storage API readFile call!');
@@ -49,27 +49,20 @@ export class TelexyStorage implements IFileStorage {
     throw new Error('Method not implemented.');
   }
 
-  protected transformAndCheckPath(path: string): string {
-    let transformedPath = path.trim();
-    if (!transformedPath) {
-      throw new Error('Path is expected');
-    }
-    return transformedPath;
-  }
-
   protected getReadDirResult(result: CMFusionFSItemWrapper, path: string): string[] {
     if (result.id === 0 && path !== '/') {
       throw new Error(`Path {path} does not exists`);
     }
-    return result.children!.map((i) => i.name!);
+    return result.children!.map((i) => this.pathConvertor.toLocalPath(i.name!));
   }
+
   /** @inheritdoc */
   async readDir(path: string): Promise<string[]> {
     try {
       this.logger.logTrace('readDir %s', path);
-      let transformedPath = this.transformAndCheckPath(path);
-      const result = await this.client.browse(transformedPath, true, false);
-      return this.getReadDirResult(result, transformedPath);
+      const convertedPath = this.pathConvertor.toStoragePath(path);
+      const result = await this.client.browse(convertedPath, true, false);
+      return this.getReadDirResult(result, convertedPath);
     } catch (err) {
       throw new UnknownError(err, 'Error occured during storage API readFile call!');
     }
@@ -83,7 +76,8 @@ export class TelexyStorage implements IFileStorage {
   async exists(path: string): Promise<boolean> {
     try {
       this.logger.logTrace('exists %s', path);
-      await this.client.stat(path);
+      const convertedPath = this.pathConvertor.toStoragePath(path);
+      await this.client.stat(convertedPath);
       return true;
     } catch {
       return false;
@@ -106,10 +100,12 @@ export class TelexyStorage implements IFileStorage {
     }
     return wrapper;
   }
+
   async writeFile(path: string, content: any): Promise<void> {
     try {
       this.logger.logTrace('writeFile %s', path);
-      await this.client.writeFile(this.getWrapperForWriteFile(path, content));
+      const convertedPath = this.pathConvertor.toStoragePath(path);
+      await this.client.writeFile(this.getWrapperForWriteFile(convertedPath, content));
     } catch (err) {
       throw new UnknownError(err, 'Error occured during storage API writeFile call!');
     }
@@ -132,9 +128,9 @@ export class TelexyStorage implements IFileStorage {
   async removeFile(path: string): Promise<void> {
     try {
       this.logger.logTrace('removeFile %s', path);
-      const normalizedPath = this.transformAndCheckPath(path);
-      const stat = await this.client.stat(normalizedPath);
-      await this.client.delete(this.getWrapperForRemoveFile(stat, path));
+      const convertedPath = this.pathConvertor.toStoragePath(path);
+      const stat = await this.client.stat(convertedPath);
+      await this.client.delete(this.getWrapperForRemoveFile(stat, convertedPath));
     } catch (err) {
       throw new UnknownError(err, 'Error occured during storage API removeFile call!');
     }
@@ -155,10 +151,11 @@ export class TelexyStorage implements IFileStorage {
   async mkDir(path: string, options?: MakeDirectoryOptions): Promise<void> {
     try {
       this.logger.logTrace('mkDir %s %s', path, options);
+      const convertedPath = this.pathConvertor.toStoragePath(path);
       if (options?.recursive) {
-        await this.client.createDirectoryRecursive(path);
+        await this.client.createDirectoryRecursive(convertedPath);
       } else {
-        await this.client.create(this.getWrapperForMkDir(path));
+        await this.client.create(this.getWrapperForMkDir(convertedPath));
       }
     } catch (err) {
       throw new UnknownError(err, 'Error occured during storage API mkDir call!');
@@ -181,8 +178,9 @@ export class TelexyStorage implements IFileStorage {
   async rmDir(path: string): Promise<void> {
     try {
       this.logger.logTrace('rmDir %s', path);
-      const stat = await this.client.stat(path);
-      await this.client.delete(this.getWrpapperForRmDir(stat, path));
+      const convertedPath = this.pathConvertor.toStoragePath(path);
+      const stat = await this.client.stat(convertedPath);
+      await this.client.delete(this.getWrpapperForRmDir(stat, convertedPath));
     } catch (err) {
       throw new UnknownError(err, 'Error occured during storage API rmDir call!');
     }
@@ -209,10 +207,21 @@ export class TelexyStorage implements IFileStorage {
     }
     return new GlobParametersWrapper({ path: path, include: patterns });
   }
+
+  private _transformGlobResult(value: string, index: number, array: string[]): string {
+    return this.pathConvertor.toLocalPath(value);
+  }
+
+  protected transformGlobResults(values: string[]): string[] {
+    return !!values ? values.map((value, index, array) => this._transformGlobResult(value, index, array)) : values;
+  }
+
   async glob(pattern: string | string[], path: string): Promise<string[]> {
     try {
       this.logger.logTrace('glob %s %o', path, pattern);
-      return await this.client.glob(this.getWrapperForGlob(pattern, path));
+      const convertedPath = this.pathConvertor.toStoragePath(path);
+      const results = await this.client.glob(this.getWrapperForGlob(pattern, convertedPath));
+      return this.transformGlobResults(results);
     } catch (err) {
       throw new UnknownError(err, 'Error occured during storage API glob call!');
     }
@@ -229,9 +238,10 @@ export class TelexyStorage implements IFileStorage {
   async copyFile(src: string, dest: string): Promise<void> {
     try {
       this.logger.logTrace('copyFile %s %o', src, dest);
-      var srcContent = await this.readFile(src);
+      const convertedPath = this.pathConvertor.toStoragePath(src);
+      var srcContent = await this.readFile(convertedPath);
       var wrapper = new CMFusionFSItemWrapper();
-      wrapper.path = dest;
+      wrapper.path = this.pathConvertor.toStoragePath(dest);
       wrapper.stringContent = srcContent;
       await this.client.writeFile(wrapper);
     } catch (err) {
@@ -242,7 +252,7 @@ export class TelexyStorage implements IFileStorage {
   async rename(oldPath: string, newPath: string): Promise<void> {
     try {
       this.logger.logTrace('rename %s %s', oldPath, newPath);
-      await this.client.move(oldPath, newPath);
+      await this.client.move(this.pathConvertor.toStoragePath(oldPath), this.pathConvertor.toStoragePath(newPath));
     } catch (err) {
       throw new UnknownError(err, 'Error occured during storage API mkDir call!');
     }

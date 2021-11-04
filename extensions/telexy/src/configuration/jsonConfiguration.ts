@@ -1,6 +1,8 @@
 import fs from 'fs/promises';
+import { isString } from 'lodash';
 import merge from 'lodash/merge';
-import { ISettings } from '../common/interfaces';
+import { ISettings, LogLevel } from '../common/interfaces';
+import { UnknownError } from '../exceptions/telexyExceptions';
 import { IConfiguration } from './abstractions';
 
 export class JsonConfiguration implements IConfiguration {
@@ -15,14 +17,15 @@ export class JsonConfiguration implements IConfiguration {
 
   private async _getSettings(): Promise<ISettings> {
     const fileName = this.path;
-    try {
-      const content = await fs.readFile(fileName);
-      const obj = JSON.parse(content.toString());
-      const result = merge<ISettings, ISettings>(this.defaultSetting, obj);
-      return result;
-    } catch (err) {
-      // ignore errors
+    const content = await fs.readFile(fileName);
+    const obj = JSON.parse(content.toString());
+    if (isString(obj.logLevel)) {
+      obj.logLevel = LogLevel[obj.logLevel];
+      if (obj.logLevel === undefined) {
+        throw new UnknownError('Unknown LogLevel!');
+      }
     }
-    return this.defaultSetting;
+    const result = merge<ISettings, ISettings>(this.defaultSetting, obj);
+    return result;
   }
 }

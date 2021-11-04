@@ -16,6 +16,7 @@ export interface ISettings {
   baseUrl: string;
   apiKey: string;
   logLevel: LogLevel;
+  localRoot: string;
 }
 
 export enum LogLevel {
@@ -82,4 +83,9 @@ export interface IFileStorage {
   copyFile(src: string, dest: string): Promise<void>;
   rename(oldPath: string, newPath: string): Promise<void>;
   zip(source: string, exclusions: { files: string[]; directories: string[] }, cb: any): unknown;
+}
+
+export interface IPathConvertor {
+  toStoragePath(localPath: string): string;
+  toLocalPath(storagePath: string): string;
 }
