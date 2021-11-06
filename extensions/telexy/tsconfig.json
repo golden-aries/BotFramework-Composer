@@ -10,7 +10,7 @@
     "outDir": "./lib",
     //"rootDir": "./src",
     "noImplicitAny": true,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "strict": true,
     "types": ["node"]
   },

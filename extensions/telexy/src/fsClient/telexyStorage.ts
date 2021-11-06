@@ -13,10 +13,13 @@ export class TelexyStorage implements IFileStorage {
   async stat(path: string): Promise<Stat> {
     try {
       this.logger.logTrace('stat %s', path);
-      const result = await this.client.stat(path);
+      const convertedPath = this.pathConvertor.toStoragePath(path);
+      const result = await this.client.stat(convertedPath);
       return this.toStat(result);
     } catch (err) {
-      throw new UnknownError(err, 'Error occured during storage API stat call!');
+      const newErr = new UnknownError(err, 'Error occured during storage API stat call!', { api: 'stat', path: path });
+      this.logger.logError('%o', newErr);
+      throw newErr;
     }
   }
 
@@ -53,7 +56,7 @@ export class TelexyStorage implements IFileStorage {
     if (result.id === 0 && path !== '/') {
       throw new Error(`Path {path} does not exists`);
     }
-    return result.children!.map((i) => this.pathConvertor.toLocalPath(i.name!));
+    return result.children!.map((i) => i.name!);
   }
 
   /** @inheritdoc */
@@ -62,9 +65,10 @@ export class TelexyStorage implements IFileStorage {
       this.logger.logTrace('readDir %s', path);
       const convertedPath = this.pathConvertor.toStoragePath(path);
       const result = await this.client.browse(convertedPath, true, false);
-      return this.getReadDirResult(result, convertedPath);
+      const convertedResults = this.getReadDirResult(result, convertedPath);
+      return convertedResults;
     } catch (err) {
-      throw new UnknownError(err, 'Error occured during storage API readFile call!');
+      throw new UnknownError(err, 'Error occured during storage API readFile call!', { path: path });
     }
   }
 

@@ -29,8 +29,7 @@ export class CMFusionFSDataSourceClient {
     if (!path) {
       throw new Error("The parameter 'path' is expected.");
     }
-    url += 'path=' + encodeURIComponent('' + path) + '&';
-    url = url.replace(/[?&]$/, '');
+    url += 'path=' + encodeURIComponent('' + path);
     return url;
   }
 
@@ -100,7 +99,8 @@ export class CMFusionFSDataSourceClient {
   }
 
   protected getStatUrl(path: string): string {
-    return this._getUrl(path, '/FusionBusApi/e6161e69-5a7f-4e22-855b-cf5c974fe8d4/Stat?');
+    const url = this._getUrl(path, '/FusionBusApi/e6161e69-5a7f-4e22-855b-cf5c974fe8d4/Stat?');
+    return url;
   }
 
   private _getHeaders(response: Response): any {
@@ -116,8 +116,11 @@ export class CMFusionFSDataSourceClient {
   }
 
   async stat(path: string): Promise<FileStat> {
-    const response = await this.http.fetch(this.getStatUrl(path), this.getStatOptionsBuilder().buildRequestInit());
-    return await this.processStat(response);
+    const url = this.getStatUrl(path);
+    const reqInit = this.getStatOptionsBuilder().buildRequestInit();
+    const response = await this.http.fetch(url, reqInit);
+    const result = await this.processStat(response);
+    return result;
   }
 
   protected async processStat(response: Response): Promise<FileStat> {
@@ -459,11 +462,11 @@ export class CMFusionFSDataSourceClient {
     if (!path) {
       throw new Error("The parameter 'path' must be provided.");
     }
-    return (
+    const url =
       this.baseUrl +
       '/FusionBusApi/e6161e69-5a7f-4e22-855b-cf5c974fe8d4/CreateDirectoryRecursive?path=' +
-      encodeURIComponent('' + path)
-    );
+      encodeURIComponent('' + path);
+    return url;
   }
 
   protected getCreateDirectoryRecursiveOptionsBuilder(): RequestOptionsBuilder {
@@ -471,11 +474,9 @@ export class CMFusionFSDataSourceClient {
   }
 
   async createDirectoryRecursive(path: string) {
-    const response = await this.http.fetch(
-      this.getCreateDirectoryRecursiveUrl(path),
-      this.getCreateDirectoryRecursiveOptionsBuilder().buildRequestInit()
-    );
-
+    const url = this.getCreateDirectoryRecursiveUrl(path);
+    const reqInit = this.getCreateDirectoryRecursiveOptionsBuilder().buildRequestInit();
+    const response = await this.http.fetch(url, reqInit);
     await this.processCreateDirectoryRecursive(response);
   }
 

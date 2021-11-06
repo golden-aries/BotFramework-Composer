@@ -13,9 +13,12 @@ export let logger: ILogger;
 export let pathConvertor: IPathConvertor;
 let telexyFsClientSync: TelexyFsClientSync;
 
-export async function initServices() {
-  await initSettings();
-  pathConvertor = new PathConvertor(settings.localRoot);
+/**
+ * @param botsFolder - botsFolder as configured in Composer
+ */
+export async function initServices(botsFolder: string) {
+  await initSettings(botsFolder);
+  pathConvertor = new PathConvertor(settings.botsFolder);
   logger = new ConsoleLogger(settings);
   initTelexyFsClientSync();
   logger.logTrace('Telexy Services Initialized');
@@ -26,7 +29,7 @@ function defaultSettings(): ISettings {
     baseUrl: 'http://localhost',
     apiKey: '',
     logLevel: LogLevel.Warning,
-    localRoot: os.homedir(),
+    botsFolder: os.homedir(),
   };
 }
 
@@ -46,8 +49,10 @@ export function getConfiguration(): IConfiguration {
   return configuration ?? (configuration = new JsonConfiguration(getConfigurationFileName(), defaultSettings()));
 }
 
-export async function initSettings(): Promise<ISettings> {
-  return settings ?? (settings = await getConfiguration().getSettings());
+export async function initSettings(botsFolder: string): Promise<ISettings> {
+  const finalSettings = settings ?? (settings = await getConfiguration().getSettings());
+  finalSettings.botsFolder = botsFolder;
+  return finalSettings;
 }
 
 let _cachedFetch: IFetch;

@@ -9,13 +9,13 @@ export class PathConvertor implements IPathConvertor {
 
   toStoragePath(localPath: string): string {
     let relativePath = path.relative(this.localRoot, this.transformAndCheckPath(localPath));
-    relativePath = relativePath.replace(path.sep, this.storageSep);
-    return this.storageRoot + this.storageSep + relativePath;
+    relativePath = relativePath.split(path.sep).join(this.storageSep);
+    return path.posix.join(this.storageRoot, relativePath);
   }
 
   toLocalPath(storagePath: string) {
     let relativePath = path.relative(this.storageRoot, this.transformAndCheckPath(storagePath));
-    relativePath = relativePath.replace(this.storageSep, path.sep);
+    relativePath = relativePath.split(this.storageSep).join(path.sep);
     return path.join(this.localRoot, relativePath);
   }
 

@@ -54,7 +54,7 @@
       "program": "${workspaceFolder}/Composer/packages/server/build/init.js",
       "env": {
         "DEBUG": "composer*",
-        "COMPOSER_BOTS_FOLDER" : "/"
+        "COMPOSER_BOTS_FOLDER" : "D:\\temp\\bots"
       },
       "restart": true,
       "outFiles": [
@@ -73,7 +73,7 @@
       "program": "${workspaceFolder}/Composer/packages/server/build/init.js",
       "env": {
         "DEBUG": "composer*",
-        "COMPOSER_BOTS_FOLDER" : "d:\\temp"
+        "COMPOSER_BOTS_FOLDER" : "/"
       },
       "restart": true,
       "outFiles": [

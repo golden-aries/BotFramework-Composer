@@ -1,12 +1,10 @@
-import { logger } from '../services/serviceProvider';
 export class BaseError extends Error {
-  public data = new Map();
   /**
    *
    */
-  constructor(public exceptionId: string, message?: string, public originalError?: unknown) {
+  constructor(public exceptionId: string, message?: string, public originalError?: unknown, public data?: any) {
     super(message ?? exceptionId);
-    logger.logTrace('%s\n%o', message, originalError);
+    //logger?.logTrace('%s\n%o', message, originalError);
   }
 
   static PathIsNotAFile: string = 'Path is not a file!';
@@ -14,14 +12,15 @@ export class BaseError extends Error {
   static NotIplemented: string = 'Not Implemented!';
   static NotAClass: string = 'Not a Class';
   static UnknownError: string = 'Unknown Error Encountered';
+  static UnableToLoadConfiguration: string = 'Unable to load configuration!';
 }
 
 export class UnknownError extends BaseError {
   /**
    *
    */
-  constructor(originalError?: unknown, message?: string) {
-    super(BaseError.UnknownError, message, originalError);
+  constructor(originalError?: unknown, message?: string, data?: any) {
+    super(BaseError.UnknownError, message, originalError, data);
   }
 }
 export class PathIsNotAFileException extends BaseError {
@@ -63,6 +62,15 @@ export class NotAClassException extends BaseError {
    */
   constructor(obj: string) {
     super(BaseError.NotAClass, BaseError.NotAClass, obj);
+  }
+}
+
+export class UnableToLoadConfiguration extends BaseError {
+  /**
+   *
+   */
+  constructor(originalError?: unknown, message?: string, data?: any) {
+    super(BaseError.UnableToLoadConfiguration, message ?? BaseError.UnableToLoadConfiguration, originalError, data);
   }
 }
 

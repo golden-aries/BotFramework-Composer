@@ -16,7 +16,7 @@ export interface ISettings {
   baseUrl: string;
   apiKey: string;
   logLevel: LogLevel;
-  localRoot: string;
+  botsFolder: string;
 }
 
 export enum LogLevel {
