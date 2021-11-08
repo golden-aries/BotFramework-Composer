@@ -44,7 +44,9 @@ export class TelexyStorage implements IFileStorage {
       const result = await this.client.readFile(convertedPath);
       return result.data.text();
     } catch (err) {
-      throw new UnknownError(err, 'Error occured during storage API readFile call!');
+      const newErr = new UnknownError(err, 'Error occured during storage API readFile call!');
+      this.logger.logError('%o', newErr);
+      throw newErr;
     }
   }
 
@@ -68,7 +70,9 @@ export class TelexyStorage implements IFileStorage {
       const convertedResults = this.getReadDirResult(result, convertedPath);
       return convertedResults;
     } catch (err) {
-      throw new UnknownError(err, 'Error occured during storage API readFile call!', { path: path });
+      const newErr = new UnknownError(err, 'Error occured during storage API readFile call!', { path: path });
+      this.logger.logError('%o', newErr);
+      throw newErr;
     }
   }
 
@@ -111,7 +115,9 @@ export class TelexyStorage implements IFileStorage {
       const convertedPath = this.pathConvertor.toStoragePath(path);
       await this.client.writeFile(this.getWrapperForWriteFile(convertedPath, content));
     } catch (err) {
-      throw new UnknownError(err, 'Error occured during storage API writeFile call!');
+      const newErr = new UnknownError(err, 'Error occured during storage API writeFile call!');
+      this.logger.logError('%o', newErr);
+      throw newErr;
     }
   }
 
@@ -136,7 +142,9 @@ export class TelexyStorage implements IFileStorage {
       const stat = await this.client.stat(convertedPath);
       await this.client.delete(this.getWrapperForRemoveFile(stat, convertedPath));
     } catch (err) {
-      throw new UnknownError(err, 'Error occured during storage API removeFile call!');
+      const newErr = new UnknownError(err, 'Error occured during storage API removeFile call!');
+      this.logger.logError('%o', newErr);
+      throw newErr;
     }
   }
 
@@ -162,7 +170,9 @@ export class TelexyStorage implements IFileStorage {
         await this.client.create(this.getWrapperForMkDir(convertedPath));
       }
     } catch (err) {
-      throw new UnknownError(err, 'Error occured during storage API mkDir call!');
+      const newErr = new UnknownError(err, 'Error occured during storage API mkDir call!');
+      this.logger.logError('%o', newErr);
+      throw newErr;
     }
   }
 
@@ -186,7 +196,9 @@ export class TelexyStorage implements IFileStorage {
       const stat = await this.client.stat(convertedPath);
       await this.client.delete(this.getWrpapperForRmDir(stat, convertedPath));
     } catch (err) {
-      throw new UnknownError(err, 'Error occured during storage API rmDir call!');
+      const newErr = new UnknownError(err, 'Error occured during storage API rmDir call!');
+      this.logger.logError('%o', newErr);
+      throw newErr;
     }
   }
 
@@ -227,16 +239,14 @@ export class TelexyStorage implements IFileStorage {
       const results = await this.client.glob(this.getWrapperForGlob(pattern, convertedPath));
       return this.transformGlobResults(results);
     } catch (err) {
-      throw new UnknownError(err, 'Error occured during storage API glob call!');
+      const newErr = new UnknownError(err, 'Error occured during storage API glob call!');
+      this.logger.logError('%o', newErr);
+      throw newErr;
     }
   }
 
   globSync(pattern: string | string[], path: string): string[] {
-    try {
-      throw new Error('Method not implemented.');
-    } catch (err) {
-      throw new UnknownError(err, 'Error occured during storage API globSync call!');
-    }
+    throw new Error('Method not implemented.');
   }
 
   async copyFile(src: string, dest: string): Promise<void> {
@@ -249,7 +259,9 @@ export class TelexyStorage implements IFileStorage {
       wrapper.stringContent = srcContent;
       await this.client.writeFile(wrapper);
     } catch (err) {
-      throw new UnknownError(err, 'Error occured during storage API copyFile call!');
+      const newErr = new UnknownError(err, 'Error occured during storage API copyFile call!');
+      this.logger.logError('%o', newErr);
+      throw newErr;
     }
   }
 
@@ -258,7 +270,9 @@ export class TelexyStorage implements IFileStorage {
       this.logger.logTrace('rename %s %s', oldPath, newPath);
       await this.client.move(this.pathConvertor.toStoragePath(oldPath), this.pathConvertor.toStoragePath(newPath));
     } catch (err) {
-      throw new UnknownError(err, 'Error occured during storage API mkDir call!');
+      const newErr = new UnknownError(err, 'Error occured during storage API mkDir call!');
+      this.logger.logError('%o', newErr);
+      throw newErr;
     }
   }
 
@@ -267,7 +281,9 @@ export class TelexyStorage implements IFileStorage {
       this.logger.logTrace('zip %s %o', source, exclusions);
       throw new Error('Method zip not implemented.');
     } catch (err) {
-      throw new UnknownError(err, 'Error occured during storage API zip call!');
+      const newErr = new UnknownError(err, 'Error occured during storage API zip call!');
+      this.logger.logError('%o', newErr);
+      throw newErr;
     }
   }
 }
