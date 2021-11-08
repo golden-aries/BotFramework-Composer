@@ -812,6 +812,9 @@ function throwException(
   headers: { [key: string]: any },
   result?: any
 ): any {
-  if (result !== null && result !== undefined) throw result;
-  else throw new ApiException(message, status, response, headers, null);
+  if (result !== null && result !== undefined) {
+    throw result;
+  } else {
+    throw new ApiException(message, status, response, headers, null);
+  }
 }

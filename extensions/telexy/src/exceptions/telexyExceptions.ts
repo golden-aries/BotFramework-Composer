@@ -13,6 +13,11 @@ export class BaseError extends Error {
   static NotAClass: string = 'Not a Class';
   static UnknownError: string = 'Unknown Error Encountered';
   static UnableToLoadConfiguration: string = 'Unable to load configuration!';
+  static FileOperationError: string = 'File operation error!';
+  static CopyOperationError: string = 'File system copy operation error';
+  static GlobOperationError: string = 'Glob operation error!';
+  static RenameOperationError: string = 'Rename operation error!';
+  static ZipOperationError: string = 'Zip operation error!';
 }
 
 export class UnknownError extends BaseError {
@@ -71,6 +76,57 @@ export class UnableToLoadConfiguration extends BaseError {
    */
   constructor(originalError?: unknown, message?: string, data?: any) {
     super(BaseError.UnableToLoadConfiguration, message ?? BaseError.UnableToLoadConfiguration, originalError, data);
+  }
+}
+export class TxFileSystemOperationError extends BaseError {
+  /**
+   *
+   */
+  constructor(path: string, originalError?: unknown, message?: string, data?: any) {
+    super(BaseError.FileOperationError, message ?? BaseError.FileOperationError, originalError, data);
+    data['path'] = path;
+  }
+}
+
+export class TxCopyOperationError extends BaseError {
+  /**
+   *
+   */
+  constructor(src: string, dst: string, originalError?: unknown, message?: string, data?: any) {
+    super(BaseError.CopyOperationError, message ?? BaseError.CopyOperationError, originalError, data);
+    data['source'] = src;
+    data['destination'] = dst;
+  }
+}
+export class TxRenameOperationError extends BaseError {
+  /**
+   *
+   */
+  constructor(oldPath: string, newPath: string, originalError?: unknown, message?: string, data?: any) {
+    super(BaseError.RenameOperationError, message ?? BaseError.RenameOperationError, originalError, data);
+    data['oldPath'] = oldPath;
+    data['newPath'] = newPath;
+  }
+}
+export class TxGlobOperationError extends BaseError {
+  /**
+   *
+   */
+  constructor(path: string, glob: string | string[], originalError?: unknown, message?: string, data?: any) {
+    super(BaseError.GlobOperationError, message ?? BaseError.GlobOperationError, originalError, data);
+    data['path'] = path;
+    data['glob'] = glob;
+  }
+}
+
+export class TxZipOperationError extends BaseError {
+  /**
+   *
+   */
+  constructor(src: string, exclusions: string | string[], originalError?: unknown, message?: string, data?: any) {
+    super(BaseError.ZipOperationError, message ?? BaseError.ZipOperationError, originalError, data);
+    data['source'] = src;
+    data['exclusions'] = exclusions;
   }
 }
 
