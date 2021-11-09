@@ -1,10 +1,15 @@
 import { IncomingHttpHeaders } from 'http';
 import syncRequest, { Options, Response } from 'sync-request';
 import { ILogger, ISettings } from '../common/interfaces';
-import { ApiException } from '../exceptions/telexyExceptions';
+import {
+  ApiException,
+  ResultIsNotABooleanValueException,
+  TxExistsOperationError,
+} from '../exceptions/telexyExceptions';
 import { IFetch } from '../common/interfaces';
 import { CMFusionFSItemWrapper, FileStat, IGlobParametersWrapper } from './telexyFs';
 import { TelexyFsClient } from './telexyFsClient';
+import _ from 'lodash';
 
 export class TelexyFsClientSync extends TelexyFsClient {
   /**
@@ -53,6 +58,23 @@ export class TelexyFsClientSync extends TelexyFsClient {
     }
     const result = this.getString(response);
     return result;
+  }
+
+  existsSync(path: string): boolean {
+    const response = this.syncPost(this.getExistsUrl(path), this.getExistsOptonsBuilder().buildSyncOptions());
+    return this.processExistsSync(<Response>response);
+  }
+
+  private processExistsSync(response: Response): boolean {
+    const statusCode = response.statusCode;
+    if (statusCode !== 200) {
+      return throwException('An unexpected server error occurred.', statusCode, '', response.headers);
+    }
+    const obj = this.parseResponseJson(response);
+    if (_.isBoolean(obj)) {
+      return obj;
+    }
+    throw new ResultIsNotABooleanValueException('API call existsSync returned wrong result!');
   }
 
   browseSync(path: string): CMFusionFSItemWrapper {

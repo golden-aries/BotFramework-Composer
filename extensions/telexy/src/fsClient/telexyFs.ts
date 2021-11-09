@@ -7,8 +7,9 @@
 //----------------------
 // ReSharper disable InconsistentNaming
 
+import _ from 'lodash';
 import { IFetch, ILogger, ISettings } from '../common/interfaces';
-import { ApiException } from '../exceptions/telexyExceptions';
+import { ApiException, ResultIsNotABooleanValueException } from '../exceptions/telexyExceptions';
 import { RequestOptionsBuilder } from './requestOptionsBuilder';
 
 export class CMFusionFSDataSourceClient {
@@ -226,6 +227,52 @@ export class CMFusionFSDataSourceClient {
       }
     } catch (err) {
       return throwException('An unexpected server error occurred.', status, response?.statusText, _headers);
+    }
+  }
+  protected getExistsUrl(path: string): string {
+    const url =
+      this.baseUrl +
+      '/FusionBusApi/e6161e69-5a7f-4e22-855b-cf5c974fe8d4/Exists?' +
+      'path=' +
+      encodeURIComponent('' + path);
+    return url;
+  }
+
+  protected getExistsOptonsBuilder(): RequestOptionsBuilder {
+    return this.getBuilder().withHeader_Accept_ApplicationJson();
+  }
+
+  async exists(path: string): Promise<boolean> {
+    const response = await this.http.fetch(
+      this.getExistsUrl(path),
+      this.getFileExistsOptionsBuilder().buildRequestInit()
+    );
+    return await this.processExists(response);
+  }
+
+  protected async processExists(response: Response): Promise<boolean> {
+    const status = response.status;
+    let headers = this._getHeaders(response);
+    if (status === 200) {
+      const json = await response.text();
+      const obj = JSON.parse(json, this.jsonParseReviver);
+      if (_.isBoolean(obj)) {
+        return obj;
+      } else {
+        throw new ResultIsNotABooleanValueException('API call exists returned wrong result!');
+      }
+    } else {
+      try {
+        const error = await response.text();
+        return throwException('An unexpected server error occurred during exists API call.', status, error, headers);
+      } catch {
+        return throwException(
+          'An unexpected server error occurred during exists API call.',
+          status,
+          response.statusText,
+          headers
+        );
+      }
     }
   }
 

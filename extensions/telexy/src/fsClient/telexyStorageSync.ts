@@ -1,5 +1,10 @@
 import { ILogger, IPathConvertor, MakeDirectoryOptions, Stat } from '../common/interfaces';
-import { TxFileSystemOperationError, TxGlobOperationError, UnknownError } from '../exceptions/telexyExceptions';
+import {
+  TxExistsOperationError,
+  TxFileSystemOperationError,
+  TxGlobOperationError,
+  UnknownError,
+} from '../exceptions/telexyExceptions';
 
 //import { Stat, MakeDirectoryOptions } from '../../../../Composer/packages/server/src/models/storage/interface';
 import { TelexyFsClientSync } from './TelexyFsClientSync';
@@ -60,15 +65,15 @@ export class TelexyStorageSync extends TelexyStorage {
     try {
       this.logger.logTrace('existsSync %s', path);
       const convertedPath = this.pathConvertor.toStoragePath(path);
-      try {
-        this._statInternalSync(convertedPath);
-        return true;
-      } catch (err) {
+      const result = this.client.existsSync(convertedPath);
+      if (!result) {
         this.logger.logTrace('Path do not exists: %s', path);
-        throw err;
       }
-    } catch {
-      return false;
+      return result;
+    } catch (err) {
+      const newErr = new TxExistsOperationError(path, err, 'Telexy strorage existSync operation finished with error!');
+      this.logger.logError('%o', newErr);
+      throw newErr;
     }
   }
 

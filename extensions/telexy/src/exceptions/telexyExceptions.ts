@@ -9,6 +9,7 @@ export class BaseError extends Error {
 
   static PathIsNotAFile: string = 'Path is not a file!';
   static PathNotADirectory: string = 'Path is not a directory!';
+  static ResultIsNotABoolean: string = 'Result is not a boolean!';
   static NotIplemented: string = 'Not Implemented!';
   static NotAClass: string = 'Not a Class';
   static UnknownError: string = 'Unknown Error Encountered';
@@ -18,6 +19,7 @@ export class BaseError extends Error {
   static GlobOperationError: string = 'Glob operation error!';
   static RenameOperationError: string = 'Rename operation error!';
   static ZipOperationError: string = 'Zip operation error!';
+  static ExistsOperationError: string = 'Exists operation error!';
 }
 
 export class UnknownError extends BaseError {
@@ -43,6 +45,15 @@ export class PathIsNotADirectoryException extends BaseError {
    */
   constructor(public path: string) {
     super(BaseError.PathNotADirectory, BaseError.PathNotADirectory, path);
+  }
+}
+
+export class ResultIsNotABooleanValueException extends BaseError {
+  /**
+   *
+   */
+  constructor(message?: string, path?: string) {
+    super(BaseError.ResultIsNotABoolean, message ?? BaseError.ResultIsNotABoolean, path);
   }
 }
 
@@ -103,6 +114,7 @@ export class TxRenameOperationError extends BaseError {
     super(BaseError.RenameOperationError, message ?? BaseError.RenameOperationError, originalError, data);
   }
 }
+
 export class TxGlobOperationError extends BaseError {
   /**
    *
@@ -130,6 +142,15 @@ export class TxZipOperationError extends BaseError {
     data?: any
   ) {
     super(BaseError.ZipOperationError, message ?? BaseError.ZipOperationError, originalError, data);
+  }
+}
+
+export class TxExistsOperationError extends BaseError {
+  /**
+   *
+   */
+  constructor(public path: string, originalError?: unknown, message?: string, data?: any) {
+    super(BaseError.ExistsOperationError, message ?? BaseError.ExistsOperationError, originalError, data);
   }
 }
 

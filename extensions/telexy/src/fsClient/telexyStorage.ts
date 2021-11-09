@@ -7,6 +7,7 @@ import {
   TxGlobOperationError,
   TxCopyOperationError,
   TxRenameOperationError,
+  TxExistsOperationError,
 } from '../exceptions/telexyExceptions';
 //import { IFileStorage, Stat, MakeDirectoryOptions } from '../../../../Composer/packages/server/src/models/storage/interface';
 import { CMFusionFSItemWrapper, FileStat, GlobParametersWrapper } from './telexyFs';
@@ -86,9 +87,7 @@ export class TelexyStorage implements IFileStorage {
       const convertedResults = this.getReadDirResult(result, convertedPath);
       return convertedResults;
     } catch (err) {
-      const newErr = new TxFileSystemOperationError(path, err, 'Error occured during storage API readFile call!', {
-        path: path,
-      });
+      const newErr = new TxFileSystemOperationError(path, err, 'Error occured during storage API readDir call!');
       this.logger.logError('%o', newErr);
       throw newErr;
     }
@@ -103,15 +102,15 @@ export class TelexyStorage implements IFileStorage {
     try {
       this.logger.logTrace('exists %s', path);
       const convertedPath = this.pathConvertor.toStoragePath(path);
-      try {
-        await this._statInternal(convertedPath);
-        return true;
-      } catch (err) {
+      const result = await this.client.exists(convertedPath);
+      if (!result) {
         this.logger.logTrace('Path do not exists: %s', path);
-        throw err;
       }
-    } catch {
-      return false;
+      return result;
+    } catch (err) {
+      const newErr = new TxExistsOperationError(path, err);
+      this.logger.logError('%o', newErr);
+      throw newErr;
     }
   }
 
