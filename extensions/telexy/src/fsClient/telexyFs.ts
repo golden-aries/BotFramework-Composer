@@ -202,6 +202,7 @@ export class CMFusionFSDataSourceClient {
   protected getBrowseOptionsBuilder(): RequestOptionsBuilder {
     return this.getBuilder().withHeader_Accept_ApplicationJson();
   }
+
   async browse(path: string, includeContent?: boolean, bytes?: boolean): Promise<CMFusionFSItemWrapper> {
     const response = await this.http.fetch(
       this.getBrowseUrl(path, includeContent, bytes),

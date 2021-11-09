@@ -22,8 +22,8 @@ export class TelexyStorage implements IFileStorage {
     try {
       this.logger.logTrace('stat %s', path);
       const convertedPath = this.pathConvertor.toStoragePath(path);
-      const result = await this.client.stat(convertedPath);
-      return this.toStat(result);
+      const result = await this._statInternal(convertedPath);
+      return result;
     } catch (err) {
       const newErr = new TxFileSystemOperationError(path, err, 'Error occured during storage API stat call!', {
         api: 'stat',
@@ -32,6 +32,11 @@ export class TelexyStorage implements IFileStorage {
       this.logger.logError('%o', newErr);
       throw newErr;
     }
+  }
+
+  private async _statInternal(convertedPath: string): Promise<Stat> {
+    let result = await this.client.stat(convertedPath);
+    return this.toStat(result);
   }
 
   protected toStat(stat: FileStat): Stat {
@@ -98,8 +103,13 @@ export class TelexyStorage implements IFileStorage {
     try {
       this.logger.logTrace('exists %s', path);
       const convertedPath = this.pathConvertor.toStoragePath(path);
-      await this.stat(convertedPath);
-      return true;
+      try {
+        await this._statInternal(convertedPath);
+        return true;
+      } catch (err) {
+        this.logger.logTrace('Path do not exists: %s', path);
+        throw err;
+      }
     } catch {
       return false;
     }

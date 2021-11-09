@@ -17,13 +17,18 @@ export class TelexyStorageSync extends TelexyStorage {
     try {
       this.logger.logTrace('statSync %s', path);
       const convertedPath = this.pathConvertor.toStoragePath(path);
-      const result = this.client.statSync(convertedPath);
-      return this.toStat(result);
+      const result = this._statInternalSync(convertedPath);
+      return result;
     } catch (err) {
       const newErr = new TxFileSystemOperationError(path, err, 'Error occured during storage API statSync call!');
       this.logger.logError('%o', newErr);
       throw newErr;
     }
+  }
+
+  private _statInternalSync(path: string): Stat {
+    const result = this.client.statSync(path);
+    return this.toStat(result);
   }
 
   readFileSync(path: string): string {
@@ -55,8 +60,13 @@ export class TelexyStorageSync extends TelexyStorage {
     try {
       this.logger.logTrace('existsSync %s', path);
       const convertedPath = this.pathConvertor.toStoragePath(path);
-      this.statSync(convertedPath);
-      return true;
+      try {
+        this._statInternalSync(convertedPath);
+        return true;
+      } catch (err) {
+        this.logger.logTrace('Path do not exists: %s', path);
+        throw err;
+      }
     } catch {
       return false;
     }
@@ -121,7 +131,8 @@ export class TelexyStorageSync extends TelexyStorage {
       this.logger.logTrace('globSync %s %o', path, pattern);
       const convertedPath = this.pathConvertor.toStoragePath(path);
       const results = this.client.globSync(this.getWrapperForGlob(pattern, convertedPath));
-      return this.transformGlobResults(results);
+      const transformedResults = this.transformGlobResults(results);
+      return transformedResults;
     } catch (err) {
       const newErr = new TxGlobOperationError(path, pattern, err, 'Error occured during storage API globSync call!');
       this.logger.logError('%o', newErr);
