@@ -260,7 +260,13 @@ export class TelexyStorage implements IFileStorage {
       this.logger.logTrace('glob %s %o', path, pattern);
       const convertedPath = this.pathConvertor.toStoragePath(path);
       const results = await this.client.glob(this.getWrapperForGlob(pattern, convertedPath));
-      return this.transformGlobResults(results);
+      if (results.length > 0) {
+        const transformedResults = this.transformGlobResults(results);
+        this.logger.logTrace('glob has results for path:%o pattern: %o ', path, pattern);
+        return transformedResults;
+      }
+      this.logger.logTrace('glob is empty for path:%o pattern: %o ', path, pattern);
+      return results;
     } catch (err) {
       const newErr = new TxGlobOperationError(path, pattern, err, 'Error occured during storage API glob call!');
       this.logger.logError('%o', newErr);

@@ -131,8 +131,13 @@ export class TelexyStorageSync extends TelexyStorage {
       this.logger.logTrace('globSync %s %o', path, pattern);
       const convertedPath = this.pathConvertor.toStoragePath(path);
       const results = this.client.globSync(this.getWrapperForGlob(pattern, convertedPath));
-      const transformedResults = this.transformGlobResults(results);
-      return transformedResults;
+      if (results.length > 0) {
+        const transformedResults = this.transformGlobResults(results);
+        this.logger.logTrace('glob has results for path:%o pattern: %o ', path, pattern);
+        return transformedResults;
+      }
+      this.logger.logTrace('glob is empty for path:%o pattern: %o ', path, pattern);
+      return results;
     } catch (err) {
       const newErr = new TxGlobOperationError(path, pattern, err, 'Error occured during storage API globSync call!');
       this.logger.logError('%o', newErr);
