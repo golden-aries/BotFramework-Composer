@@ -125,6 +125,7 @@ export class TelexyStorage implements IFileStorage {
     switch (typeof content) {
       case 'string':
         wrapper.stringContent = content;
+        break;
       default:
         wrapper.stringContent = content?.toString();
     }
@@ -243,7 +244,15 @@ export class TelexyStorage implements IFileStorage {
     } else {
       patterns.push(pattern);
     }
-    return new GlobParametersWrapper({ path: path, include: patterns });
+    const include = patterns.filter((p) => !p?.startsWith('!'));
+    // patterns like '!(settings/appsettings.json)',    '!(**/luconfig.json)' go to exclude parameter
+    const exclude = patterns
+      .filter((p) => p.startsWith('!') && p.length > 3)
+      .map((p) => {
+        const t = p.replace('!(', ''); // removes starting "!("
+        return t.slice(0, t.length - 1); // removes ending ")"
+      });
+    return new GlobParametersWrapper({ path: path, include: include, exclude: exclude });
   }
 
   private _transformGlobResult(value: string, index: number, array: string[]): string {

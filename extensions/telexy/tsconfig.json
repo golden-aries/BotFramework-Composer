@@ -12,6 +12,7 @@
     "noImplicitAny": true,
     "noUnusedLocals": false,
     "strict": true,
+    "noFallthroughCasesInSwitch": true /* Report errors for fallthrough cases in switch statement. */,
     "types": ["node"]
   },
   "include": ["src/**/*"],
