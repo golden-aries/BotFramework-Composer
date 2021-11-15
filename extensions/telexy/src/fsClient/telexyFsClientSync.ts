@@ -119,6 +119,25 @@ export class TelexyFsClientSync extends TelexyFsClient {
     }
   }
 
+  createSync(model: CMFusionFSItemWrapper, includeContent?: boolean, bytes?: boolean): CMFusionFSItemWrapper {
+    const response = this.syncPost(
+      this.getCreateUrl(includeContent, bytes),
+      this.getCreateOptionsBuilder(model).buildSyncOptions()
+    );
+
+    return this.processCreateSync(<Response>response);
+  }
+
+  private processCreateSync(response: Response): CMFusionFSItemWrapper {
+    const statusCode = response.statusCode;
+    if (statusCode === 200) {
+      const json = response.getBody('utf8');
+      return CMFusionFSItemWrapper.fromJS(JSON.parse(json));
+    } else {
+      return throwException('An unexpected server error occurred.', statusCode, '', response.headers);
+    }
+  }
+
   createDirectoryRecursiveSync(path: string): FileStat {
     const response = this.syncPost(
       this.getCreateDirectoryRecursiveUrl(path),

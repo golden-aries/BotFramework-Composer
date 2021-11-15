@@ -106,7 +106,11 @@ export class TelexyStorageSync extends TelexyStorage {
     try {
       this.logger.logTrace('mdkDirSync %s', path);
       const convertedPath = this.pathConvertor.toStoragePath(path);
-      this.client.create(this.getWrapperForMkDir(convertedPath));
+      if (options?.recursive) {
+        this.client.createDirectoryRecursiveSync(convertedPath);
+      } else {
+        this.client.createSync(this.getWrapperForMkDir(convertedPath));
+      }
     } catch (err) {
       const newErr = new TxFileSystemOperationError(path, err, 'Error occured during storage API mkDirSync call!');
       this.logger.logError('%o', newErr);

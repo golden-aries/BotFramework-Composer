@@ -256,7 +256,7 @@ export class TelexyStorage implements IFileStorage {
   }
 
   private _transformGlobResult(value: string, index: number, array: string[]): string {
-    return this.pathConvertor.toLocalPath(value);
+    return value; //this.pathConvertor.toLocalPath(value);
   }
 
   protected transformGlobResults(values: string[]): string[] {
