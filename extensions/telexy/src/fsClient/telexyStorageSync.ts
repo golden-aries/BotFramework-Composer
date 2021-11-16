@@ -52,7 +52,7 @@ export class TelexyStorageSync extends TelexyStorage {
     try {
       this.logger.logTrace('readDirSync %s', path);
       const convertedPath = this.pathConvertor.toStoragePath(path);
-      var result = this.client.browseSync(path);
+      var result = this.client.browseSync(convertedPath);
       return this.getReadDirResult(result, convertedPath);
     } catch (err) {
       const newErr = new TxFileSystemOperationError(path, err, 'Error occured during storage API readDirSync call!');
