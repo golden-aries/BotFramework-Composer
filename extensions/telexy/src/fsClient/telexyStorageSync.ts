@@ -81,7 +81,7 @@ export class TelexyStorageSync extends TelexyStorage {
     try {
       this.logger.logTrace('writeFileSync %s', path);
       const convertedPath = this.pathConvertor.toStoragePath(path);
-      this.client.writeFile(this.getWrapperForWriteFile(convertedPath, content));
+      this.client.writeFileSync(this.getWrapperForWriteFile(convertedPath, content));
     } catch (err) {
       const newErr = new TxFileSystemOperationError(path, err, 'Error occured during storage API writeFileSync call!');
       this.logger.logError('%o', newErr);
@@ -104,7 +104,7 @@ export class TelexyStorageSync extends TelexyStorage {
 
   mkDirSync(path: string, options?: MakeDirectoryOptions): void {
     try {
-      this.logger.logTrace('mdkDirSync %s', path);
+      this.logger.logTrace('mdkDirSync %s %s', !!options?.recursive ? 'recursive' : 'non-recursive', path);
       const convertedPath = this.pathConvertor.toStoragePath(path);
       if (options?.recursive) {
         this.client.createDirectoryRecursiveSync(convertedPath);
