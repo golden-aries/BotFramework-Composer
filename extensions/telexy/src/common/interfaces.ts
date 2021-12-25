@@ -7,6 +7,7 @@ export interface ISettings {
   apiKey: string;
   logLevel: LogLevel;
   botsFolder: string;
+  performanceProfiling: boolean;
 }
 
 export enum LogLevel {
@@ -78,4 +79,10 @@ export interface IFileStorage {
 export interface IPathConvertor {
   toStoragePath(localPath: string): string;
   toLocalPath(storagePath: string): string;
+}
+
+/** simple performance profiler */
+export interface IProfiler {
+  hrtime(): bigint | undefined;
+  loghrtime(msg: string, details: any, previousTime?: bigint): void;
 }

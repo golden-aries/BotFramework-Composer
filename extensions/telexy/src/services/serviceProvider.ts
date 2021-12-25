@@ -1,5 +1,5 @@
 import path from 'path';
-import { IFetch, ILogger, IPathConvertor, ISettings, LogLevel } from '../common/interfaces';
+import { IFetch, ILogger, IPathConvertor, IProfiler, ISettings, LogLevel } from '../common/interfaces';
 import { IConfiguration } from '../configuration/abstractions';
 import { JsonConfiguration } from '../configuration/jsonConfiguration';
 import { TelexyFsClientSync } from '../fsClient/TelexyFsClientSync';
@@ -7,10 +7,12 @@ import { TelexyStorageSync } from '../fsClient/telexyStorageSync';
 import { ConsoleLogger } from '../log/logger';
 import os from 'os';
 import { PathConvertor } from '../fsClient/pathConvertor';
+import { Profiler } from '../common/profiler';
 
 export let settings: ISettings;
 export let logger: ILogger;
 export let pathConvertor: IPathConvertor;
+export let profiler: IProfiler;
 let telexyFsClientSync: TelexyFsClientSync;
 
 /**
@@ -18,8 +20,10 @@ let telexyFsClientSync: TelexyFsClientSync;
  */
 export async function initServices(botsFolder: string) {
   await initSettings(botsFolder);
+
   pathConvertor = new PathConvertor(settings.botsFolder);
   logger = new ConsoleLogger(settings);
+  profiler = new Profiler(settings, logger);
   initTelexyFsClientSync();
   logger.logTrace('Telexy Services Initialized');
 }
@@ -30,6 +34,7 @@ function defaultSettings(): ISettings {
     apiKey: '',
     logLevel: LogLevel.Warning,
     botsFolder: os.homedir(),
+    performanceProfiling: false,
   };
 }
 
@@ -69,7 +74,7 @@ export class Storage extends TelexyStorageSync {
    *
    */
   constructor() {
-    super(telexyFsClientSync, logger, pathConvertor);
+    super(telexyFsClientSync, logger, pathConvertor, profiler);
     logger.logTrace('Telexy Storage Created!');
   }
 }

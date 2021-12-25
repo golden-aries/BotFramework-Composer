@@ -1,4 +1,12 @@
-import { IFileStorage, ILogger, IPathConvertor, MakeDirectoryOptions, Stat } from '../common/interfaces';
+import {
+  IFileStorage,
+  ILogger,
+  IPathConvertor,
+  IProfiler,
+  ISettings,
+  MakeDirectoryOptions,
+  Stat,
+} from '../common/interfaces';
 import {
   TxFileSystemOperationError,
   PathIsNotADirectoryException,
@@ -17,13 +25,20 @@ export class TelexyStorage implements IFileStorage {
   /**
    *
    */
-  constructor(protected client: TelexyFsClient, protected logger: ILogger, protected pathConvertor: IPathConvertor) {}
+  constructor(
+    protected client: TelexyFsClient,
+    protected logger: ILogger,
+    protected pathConvertor: IPathConvertor,
+    protected profiler: IProfiler
+  ) {}
 
   async stat(path: string): Promise<Stat> {
     try {
       this.logger.logTrace('stat %s', path);
+      const t = this.profiler.hrtime();
       const convertedPath = this.pathConvertor.toStoragePath(path);
       const result = await this._statInternal(convertedPath);
+      this.profiler.loghrtime('stat', path, t);
       return result;
     } catch (err) {
       const newErr = new TxFileSystemOperationError(path, err, 'Error occured during storage API stat call!', {
@@ -57,8 +72,10 @@ export class TelexyStorage implements IFileStorage {
   async readFile(path: string): Promise<string> {
     try {
       this.logger.logTrace('readFile %s', path);
+      const t = this.profiler.hrtime();
       const convertedPath = this.pathConvertor.toStoragePath(path);
       const result = await this.client.readFile(convertedPath);
+      this.profiler.loghrtime('readFile', path, t);
       return result.data.text();
     } catch (err) {
       const newErr = new TxFileSystemOperationError(path, err, 'Error occured during storage API readFile call!');
@@ -82,9 +99,11 @@ export class TelexyStorage implements IFileStorage {
   async readDir(path: string): Promise<string[]> {
     try {
       this.logger.logTrace('readDir %s', path);
+      const t = this.profiler.hrtime();
       const convertedPath = this.pathConvertor.toStoragePath(path);
       const result = await this.client.browse(convertedPath, true, false);
       const convertedResults = this.getReadDirResult(result, convertedPath);
+      this.profiler.loghrtime('readDir', path, t);
       return convertedResults;
     } catch (err) {
       const newErr = new TxFileSystemOperationError(path, err, 'Error occured during storage API readDir call!');
@@ -101,11 +120,13 @@ export class TelexyStorage implements IFileStorage {
   async exists(path: string): Promise<boolean> {
     try {
       this.logger.logTrace('exists %s', path);
+      const t = this.profiler.hrtime();
       const convertedPath = this.pathConvertor.toStoragePath(path);
       const result = await this.client.exists(convertedPath);
       if (!result) {
         this.logger.logTrace('Path do not exists: %s', path);
       }
+      this.profiler.loghrtime('exists', path, t);
       return result;
     } catch (err) {
       const newErr = new TxExistsOperationError(path, err);
@@ -135,8 +156,10 @@ export class TelexyStorage implements IFileStorage {
   async writeFile(path: string, content: any): Promise<void> {
     try {
       this.logger.logTrace('writeFile %s', path);
+      const t = this.profiler.hrtime();
       const convertedPath = this.pathConvertor.toStoragePath(path);
       await this.client.writeFile(this.getWrapperForWriteFile(convertedPath, content));
+      this.profiler.loghrtime('writeFile', path, t);
     } catch (err) {
       const newErr = new TxFileSystemOperationError(path, err, 'Error occured during storage API writeFile call!');
       this.logger.logError('%o', newErr);
@@ -161,9 +184,11 @@ export class TelexyStorage implements IFileStorage {
   async removeFile(path: string): Promise<void> {
     try {
       this.logger.logTrace('removeFile %s', path);
+      const t = this.profiler.hrtime();
       const convertedPath = this.pathConvertor.toStoragePath(path);
       const stat = await this.client.stat(convertedPath);
       await this.client.delete(this.getWrapperForRemoveFile(stat, convertedPath));
+      this.profiler.loghrtime('removeFile', path, t);
     } catch (err) {
       const newErr = new TxFileSystemOperationError(path, err, 'Error occured during storage API removeFile call!');
       this.logger.logError('%o', newErr);
@@ -186,12 +211,14 @@ export class TelexyStorage implements IFileStorage {
   async mkDir(path: string, options?: MakeDirectoryOptions): Promise<void> {
     try {
       this.logger.logTrace('mkDir %s %s', path, options);
+      const t = this.profiler.hrtime();
       const convertedPath = this.pathConvertor.toStoragePath(path);
       if (options?.recursive) {
         await this.client.createDirectoryRecursive(convertedPath);
       } else {
         await this.client.create(this.getWrapperForMkDir(convertedPath));
       }
+      this.profiler.loghrtime('mkDir', path, t);
     } catch (err) {
       const newErr = new TxFileSystemOperationError(path, err, 'Error occured during storage API mkDir call!');
       this.logger.logError('%o', newErr);
@@ -215,9 +242,11 @@ export class TelexyStorage implements IFileStorage {
   async rmDir(path: string): Promise<void> {
     try {
       this.logger.logTrace('rmDir %s', path);
+      const t = this.profiler.hrtime();
       const convertedPath = this.pathConvertor.toStoragePath(path);
       const stat = await this.client.stat(convertedPath);
       await this.client.delete(this.getWrpapperForRmDir(stat, convertedPath));
+      this.profiler.loghrtime('rmDir', path, t);
     } catch (err) {
       const newErr = new TxFileSystemOperationError(path, err, 'Error occured during storage API rmDir call!');
       this.logger.logError('%o', newErr);
@@ -266,14 +295,17 @@ export class TelexyStorage implements IFileStorage {
   async glob(pattern: string | string[], path: string): Promise<string[]> {
     try {
       this.logger.logTrace('glob %s %o', path, pattern);
+      const t = this.profiler.hrtime();
       const convertedPath = this.pathConvertor.toStoragePath(path);
       const results = await this.client.glob(this.getWrapperForGlob(pattern, convertedPath));
       if (results.length > 0) {
         const transformedResults = this.transformGlobResults(results);
+        this.profiler.loghrtime('glob', path, t);
         this.logger.logTrace('glob has results for path:%o pattern: %o ', path, pattern);
         return transformedResults;
       }
       this.logger.logTrace('glob is empty for path:%o pattern: %o ', path, pattern);
+      this.profiler.loghrtime('glob', path, t);
       return results;
     } catch (err) {
       const newErr = new TxGlobOperationError(path, pattern, err, 'Error occured during storage API glob call!');
@@ -289,12 +321,14 @@ export class TelexyStorage implements IFileStorage {
   async copyFile(src: string, dest: string): Promise<void> {
     try {
       this.logger.logTrace('copyFile %s %o', src, dest);
+      const t = this.profiler.hrtime();
       const convertedPath = this.pathConvertor.toStoragePath(src);
       var srcContent = await this.readFile(convertedPath);
       var wrapper = new CMFusionFSItemWrapper();
       wrapper.path = this.pathConvertor.toStoragePath(dest);
       wrapper.stringContent = srcContent;
       await this.client.writeFile(wrapper);
+      this.profiler.loghrtime('copyFile', src, t);
     } catch (err) {
       const newErr = new TxCopyOperationError(src, dest, err, 'Error occured during storage API copyFile call!');
       this.logger.logError('%o', newErr);
@@ -305,7 +339,9 @@ export class TelexyStorage implements IFileStorage {
   async rename(oldPath: string, newPath: string): Promise<void> {
     try {
       this.logger.logTrace('rename %s %s', oldPath, newPath);
+      const t = this.profiler.hrtime();
       await this.client.move(this.pathConvertor.toStoragePath(oldPath), this.pathConvertor.toStoragePath(newPath));
+      this.profiler.loghrtime('rename', oldPath, t);
     } catch (err) {
       const newErr = new TxRenameOperationError(oldPath, newPath, err, 'Error occured during storage API rename call!');
       this.logger.logError('%o', newErr);
