@@ -57,9 +57,9 @@ export class TelexyBotProjectService implements IBotProjectService {
 
   createProjectAsync: (req: ExpressRequest, jobId: string) => Promise<void> = async (req, jobId) => {
     // making it an arrow function because it can be called without "this" context
-    this._logger.logTrace(this._createProjectMsg1, this, jobId);
-    const t = this._profiler.hrtime();
     try {
+      this._logger.logTrace(this._createProjectMsg1, this, jobId);
+      const t = this._profiler.hrtime();
       await this._originalCreateProjectAsync(req, jobId);
       this._profiler.loghrtime(this._createProjectMsg0, jobId, t);
     } catch (err) {
