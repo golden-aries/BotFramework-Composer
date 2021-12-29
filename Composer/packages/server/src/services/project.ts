@@ -28,7 +28,7 @@ import StorageService from './storage';
 import { Path } from './../utility/path';
 import { BackgroundProcessManager } from './backgroundProcessManager';
 import { TelemetryService } from './telemetry';
-import { StorageHelper } from './storageHelper';
+//import { StorageHelper } from './storageHelper';
 const execAsync = promisify(exec);
 
 const MAX_RECENT_BOTS = 7;
@@ -691,9 +691,9 @@ export class BotProjectService {
 
       BackgroundProcessManager.updateProcess(jobId, 202, formatMessage('Bot files created'));
 
-      const storage = StorageService.getStorageClient(newProjRef.storageId, user);
-      const helper = new StorageHelper(storage);
-      await helper.insureFolderIsInStorage(newProjRef.path);
+      //const storage = StorageService.getStorageClient(newProjRef.storageId, user);
+      //const helper = new StorageHelper(storage);
+      //await helper.insureFolderIsInStorage(newProjRef.path);
 
       const botsToProcess: { storageId: string; path: string; name: string }[] = [];
 

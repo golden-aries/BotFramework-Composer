@@ -8,12 +8,24 @@ import { ConsoleLogger } from '../log/logger';
 import os from 'os';
 import { PathConvertor } from '../fsClient/pathConvertor';
 import { Profiler } from '../common/profiler';
+import { IBotProjectService } from '../common/iBotProjectService';
+import { TelexyBotProjectService } from './telexyBotProjectService';
+import {
+  DialogSetting,
+  PublishPlugin,
+  IExtensionRegistration,
+  IBotProject,
+  UserIdentity,
+} from '@botframework-composer/types';
+import { PublishConfig, TelexyPublisher } from '../publish/telexyPublish';
 
-export let settings: ISettings;
-export let logger: ILogger;
-export let pathConvertor: IPathConvertor;
-export let profiler: IProfiler;
+let settings: ISettings;
+let logger: ILogger;
+let pathConvertor: IPathConvertor;
+let profiler: IProfiler;
+let botProjectService: IBotProjectService;
 let telexyFsClientSync: TelexyFsClientSync;
+let publisher: PublishPlugin<PublishConfig>;
 
 /**
  * @param botsFolder - botsFolder as configured in Composer
@@ -25,6 +37,7 @@ export async function initServices(botsFolder: string) {
   logger = new ConsoleLogger(settings);
   profiler = new Profiler(settings, logger);
   initTelexyFsClientSync();
+  botProjectService = new TelexyBotProjectService(logger, profiler);
   logger.logTrace('Telexy Services Initialized');
 }
 
@@ -77,4 +90,12 @@ export class Storage extends TelexyStorageSync {
     super(telexyFsClientSync, logger, pathConvertor, profiler);
     logger.logTrace('Telexy Storage Created!');
   }
+}
+
+export function getBotProjectService(): IBotProjectService {
+  return botProjectService;
+}
+
+export function getPublisher(registration: IExtensionRegistration): PublishPlugin<PublishConfig> {
+  return (publisher = publisher ?? new TelexyPublisher(registration, logger, profiler));
 }

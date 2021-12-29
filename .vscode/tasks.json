@@ -59,7 +59,11 @@
       },
       "problemMatcher": [
         "$tsc"
-      ]
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
     },
     {
       "label": "telexy watch",

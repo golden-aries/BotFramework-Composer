@@ -18,6 +18,7 @@ import {
   UserIdentity,
 } from '@botframework-composer/types';
 import { RuntimeLogServer } from './telexyRuntimeLogServer';
+import { ILogger, IProfiler } from '../common/interfaces';
 
 interface RunningBot {
   process?: ChildProcess;
@@ -29,7 +30,7 @@ interface RunningBot {
     runtimeError?: string;
   };
 }
-interface PublishConfig {
+export interface PublishConfig {
   botId: string;
   version: string;
   fullSettings: any;
@@ -60,10 +61,20 @@ export class TelexyPublisher implements PublishPlugin<PublishConfig> {
   public name = 'localpublish';
   public description = 'Publish bot to local runtime';
   static runningBots: { [key: string]: RunningBot } = {};
-  private composer: IExtensionRegistration;
 
-  constructor(composer: IExtensionRegistration) {
-    this.composer = composer;
+  constructor(private _composer: IExtensionRegistration, private _logger: ILogger, private _profiler: IProfiler) {
+    if (!this._composer) {
+      throw new Error(`${this}.constructor: parameter _composer is falsy`);
+    }
+
+    if (!this._logger) {
+      throw new Error(`${this}.constructor: parameter _logger is falsy`);
+    }
+
+    if (!this._profiler) {
+      throw new Error(`${this}.constructor parameter _logger is falsy`);
+    }
+    this._logger.logTrace('%s created!', this);
   }
 
   private setBotStatus = (botId: string, data: RunningBot) => {
@@ -72,7 +83,7 @@ export class TelexyPublisher implements PublishPlugin<PublishConfig> {
       status: data.status,
     };
 
-    this.composer.log(`SETTING STATUS OF ${botId} to port ${data.port} and status ${data.status}`);
+    this._composer.log(`SETTING STATUS OF ${botId} to port ${data.port} and status ${data.status}`);
     // preserve the pid and port if one is available
     if (data.process && !TelexyPublisher.runningBots[botId]?.process) {
       updatedBotData.process = data.process;
@@ -137,9 +148,11 @@ export class TelexyPublisher implements PublishPlugin<PublishConfig> {
     user: any
   ) => {
     try {
+      this._logger.logTrace('%s.publishAsync $s, $s $o $o', this, botId, version, fullSettings, project);
+      const t = this._profiler.hrtime();
       let port;
       if (TelexyPublisher.runningBots[botId]) {
-        this.composer.log('Bot already running. Stopping bot...');
+        this._composer.log('Bot already running. Stopping bot...');
         // this may or may not be set based on the status of the bot
         port = TelexyPublisher.runningBots[botId].port;
         await this.stopBot(botId);
@@ -161,14 +174,17 @@ export class TelexyPublisher implements PublishPlugin<PublishConfig> {
         TelexyPublisher.runningBots[botId] = updatedBotData;
       }
 
-      const runtime = this.composer.getRuntimeByProject(project);
+      const runtime = this._composer.getRuntimeByProject(project);
       if (project.settings.runtime.path && project.settings.runtime.command) {
         const runtimePath = project.getRuntimePath();
+        this._logger.logTrace('%s.publishAsync launch building $s, $s', this, botId, version);
         await runtime.build(runtimePath, project, fullSettings, port);
+        this._profiler.loghrtime('TelexyPublisher build finished', botId, t);
       } else {
         throw new Error('Custom runtime settings are incomplete. Please specify path and command.');
       }
       await this.setBot(botId, version, fullSettings, project, port);
+      this._profiler.loghrtime('TelexyPublisher sttarted', botId, t);
     } catch (error) {
       await this.stopBot(botId);
       this.setBotStatus(botId, {
@@ -186,7 +202,7 @@ export class TelexyPublisher implements PublishPlugin<PublishConfig> {
     const botId = project.id;
     const version = 'default';
 
-    this.composer.log('Starting publish');
+    this._composer.log('Starting publish');
 
     // set the running bot status
     this.setBotStatus(botId!, {
@@ -286,7 +302,7 @@ export class TelexyPublisher implements PublishPlugin<PublishConfig> {
     const commandAndArgs =
       settings.runtime?.customRuntime === true
         ? settings.runtime.command.split(/\s+/)
-        : this.composer.getRuntimeByProject(project).startCommand.split(/\s+/);
+        : this._composer.getRuntimeByProject(project).startCommand.split(/\s+/);
 
     return new Promise((resolve, reject) => {
       // ensure the specified runtime path exists
@@ -295,7 +311,7 @@ export class TelexyPublisher implements PublishPlugin<PublishConfig> {
         return;
       }
       // take the 0th item off the array, leaving just the args
-      this.composer.log('Starting bot on port %d. (%s)', port, commandAndArgs.join(' '));
+      this._composer.log('Starting bot on port %d. (%s)', port, commandAndArgs.join(' '));
       const startCommand = commandAndArgs.shift();
 
       let config: string[] = [];
@@ -307,7 +323,7 @@ export class TelexyPublisher implements PublishPlugin<PublishConfig> {
       config = this.getConfig(settings, skillHostEndpoint);
       let spawnProcess: any;
       const args = [...commandAndArgs, '--port', port, `--urls`, `http://0.0.0.0:${port}`, ...config];
-      this.composer.log('Executing command with arguments: %s %s', startCommand, args.join(' '));
+      this._composer.log('Executing command with arguments: %s %s', startCommand, args.join(' '));
       try {
         spawnProcess = spawn(startCommand, args, {
           cwd: botDir,
@@ -315,7 +331,7 @@ export class TelexyPublisher implements PublishPlugin<PublishConfig> {
           detached: !isWin, // detach in non-windows
           shell: true, // run in a shell on windows so `npm start` doesn't need to be `npm.cmd start`
         });
-        this.composer.log('Started process %d', spawnProcess.pid);
+        this._composer.log('Started process %d', spawnProcess.pid);
         this.setBotStatus(botId, {
           process: spawnProcess,
           port,
@@ -327,7 +343,7 @@ export class TelexyPublisher implements PublishPlugin<PublishConfig> {
         // retry every 500ms, timeout 2min
         const retryTime = 500;
         const timeOutTime = 120000;
-        const processLog = this.composer.log.extend(spawnProcess.pid);
+        const processLog = this._composer.log.extend(spawnProcess.pid);
         this.addListeners(spawnProcess, botId, processLog);
 
         tcpPortUsed.waitUntilUsedOnHost(port, '0.0.0.0', retryTime, timeOutTime).then(
@@ -433,7 +449,7 @@ export class TelexyPublisher implements PublishPlugin<PublishConfig> {
     const port = TelexyPublisher.runningBots[botId]?.port;
 
     if (port) {
-      this.composer.log('Killing process at port %d', port);
+      this._composer.log('Killing process at port %d', port);
 
       await new Promise((resolve, reject) => {
         setTimeout(async () => {
@@ -465,6 +481,10 @@ export class TelexyPublisher implements PublishPlugin<PublishConfig> {
       delete TelexyPublisher.runningBots[botId];
     }
   };
+
+  toString(): string {
+    return 'TelexyPublisher';
+  }
 }
 
 // stop all the runningBot when process exit
