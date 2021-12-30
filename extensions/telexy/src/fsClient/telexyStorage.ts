@@ -18,7 +18,7 @@ import {
   TxExistsOperationError,
 } from '../exceptions/telexyExceptions';
 //import { IFileStorage, Stat, MakeDirectoryOptions } from '../../../../Composer/packages/server/src/models/storage/interface';
-import { CMFusionFSItemWrapper, FileStat, GlobParametersWrapper } from './telexyFs';
+import { CMFusionFSItemWrapper, FileStat, GlobParametersWrapper } from './telexyFsTypes';
 import { TelexyFsClient } from './telexyFsClient';
 
 export class TelexyStorage implements IFileStorage {

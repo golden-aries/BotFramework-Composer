@@ -7,7 +7,7 @@ import {
   TxExistsOperationError,
 } from '../exceptions/telexyExceptions';
 import { IFetch } from '../common/interfaces';
-import { CMFusionFSItemWrapper, FileStat, IGlobParametersWrapper } from './telexyFs';
+import { CMFusionFSItemWrapper, FileStat, IGlobParametersWrapper } from './telexyFsTypes';
 import { TelexyFsClient } from './telexyFsClient';
 import _ from 'lodash';
 
