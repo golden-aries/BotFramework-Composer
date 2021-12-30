@@ -1,5 +1,6 @@
 import { ILogger, IProfiler, ISettings } from './interfaces';
 import { Span } from './span';
+import * as util from 'util';
 
 /** @inheritdoc */
 export class Profiler implements IProfiler {
@@ -12,6 +13,7 @@ export class Profiler implements IProfiler {
     return undefined;
   }
 
+  /** @deprecated use log instead */
   loghrtime(msg: any, details: any, previousTime?: bigint): void {
     if (previousTime) {
       const elapsed = process.hrtime.bigint() - previousTime;
@@ -22,6 +24,14 @@ export class Profiler implements IProfiler {
       } else {
         this._logger.logTrace('%s finished in %s', msg, span);
       }
+    }
+  }
+
+  log(previousTime: bigint | undefined, format: string, ...optionalParams: any[]): void {
+    if (previousTime) {
+      const elapsed = process.hrtime.bigint() - previousTime;
+      const span = new Span(elapsed);
+      this._logger.logTrace('%s finished in %s', util.format(format, ...optionalParams), span);
     }
   }
 }

@@ -62,81 +62,142 @@ export class TelexyStorageService implements IStorageService {
     this._createStorageConnection(connection);
   };
 
+  private _getStorageConnectionsName: string = `${this}.getStorageConnections`;
   getStorageConnections: () => StorageConnection[] = () => {
     try {
-      this._logger.logTrace('%s.getStorageConnections ', this);
+      this._logger.logTrace(this._getStorageConnectionsName);
       const result = this._getStorageConnections() ?? [];
       return result;
     } catch (err) {
-      this._logger.logError('%s %o', this, err);
+      this._logger.logError('%s %o', this._getStorageConnectionsName, err);
       throw err;
     }
   };
 
+  private _checkBlobName: string = `${this}.checkBlob`;
   checkBlob: (storageId: string, filePath: string, user?: UserIdentity) => Promise<boolean> = async (
     storageId,
     filePath,
     user
   ) => {
     try {
-      this._logger.logTrace('%s.checkBlob', this);
+      this._logger.logTrace('%s %s', this._checkBlobName, filePath);
       const t = this._profiler.hrtime();
       const result = await this._checkBlob(storageId, filePath, user);
-      this._profiler.loghrtime(this, 'checkBlob', t);
+      this._profiler.log(t, '%s %s', this._checkBlobName, filePath);
       return result;
     } catch (err) {
-      this._logger.logError('%s.checkBlob %o', this, err);
+      this._logger.logError('%s %o', this._checkBlobName, err);
       throw err;
     }
   };
 
+  private _getBlobDateModifiedName: string = `${this}.getBlobDateModified`;
   getBlobDateModified: (storageId: string, filePath: string, user?: UserIdentity) => Promise<string> = async (
     storageId,
     filePath,
     user
   ) => {
-    return await this._getBlobDateModified(storageId, filePath, user);
+    try {
+      this._logger.logTrace('%s %s', this._getBlobDateModifiedName, filePath);
+      const t = this._profiler.hrtime();
+      const result = await this._getBlobDateModified(storageId, filePath, user);
+      return result;
+      this._profiler.log(t, '%s %s', this._getBlobDateModifiedName, filePath);
+    } catch (err) {
+      this._logger.logError('%s %o', this._getBlobDateModifiedName, err);
+      throw err;
+    }
   };
 
+  private _getBlobName: string = `${this}.getBlob`;
   getBlob: (
     storageId: string,
     filePath: string,
     user?: UserIdentity
   ) => Promise<IBlobRootContent | IBlobFolderContent> = async (storageId, filePath, user) => {
     try {
-      this._logger.logTrace('%s.getBlob %s', this, filePath);
+      this._logger.logTrace('%s %s', this._getBlobName, filePath);
       const t = this._profiler.hrtime();
       const result = await this._getBlob(storageId, filePath, user);
-      this._profiler.loghrtime(this, 'getBlob', t);
+      this._profiler.log(t, '%s %s', this._getBlobName, filePath);
       return result;
     } catch (err) {
-      this._logger.logError('%s %s %o', this, 'getBlob', err);
+      this._logger.logError('%s %o', this._getBlobName, err);
       throw err;
     }
   };
 
+  private _updateCurrentPathName: string = `${this}.updateCurrentPath`;
   updateCurrentPath: (path: string, storageId: string) => StorageConnection[] = (path, storageId) => {
-    return this._updateCurrentPath(path, storageId);
+    try {
+      this._logger.logTrace('%s %s', this._updateCurrentPathName, path);
+      const t = this._profiler.hrtime();
+      const result = this._updateCurrentPath(path, storageId);
+      this._profiler.log(t, '%s %s', this._updateCurrentPathName, path);
+      return result;
+    } catch (err) {
+      this._logger.logError('%s %o', this._updateCurrentPathName, err);
+      throw err;
+    }
   };
 
+  private _validatePathName: string = `${this}.validatePath`;
   validatePath: (path: string) => '' | 'The path does not exist' | 'This is not a directory' = (path) => {
-    return this._validatePath(path);
+    try {
+      this._logger.logTrace('%s %s', this._validatePathName, path);
+      const t = this._profiler.hrtime();
+      this._profiler.log(t, '%s %s', this._validatePathName, path);
+      const result = this._validatePath(path);
+      return result;
+    } catch (err) {
+      this._logger.logError('%s %o', this._validatePathName, err);
+      throw err;
+    }
   };
 
+  private _createFolderName: string = `${this}.createFolder`;
   createFolder: (path: string) => void = (path) => {
-    this._createFolder(path);
+    try {
+      this._logger.logTrace('%s %s', this._createFolderName, path);
+      const t = this._profiler.hrtime();
+      this._createFolder(path);
+      this._profiler.log(t, '%s %s', this._createFolderName, path);
+    } catch (err) {
+      this._logger.logError('%s %o', this._createFolderName, err);
+      throw err;
+    }
   };
 
+  private _updateFolderName: string = `${this}.updateFolder`;
   updateFolder: (path: string, oldName: string, newName: string) => void = (path, oldName, newName) => {
-    this._updateFolder(path, oldName, newName);
+    try {
+      this._logger.logTrace('%s %s %s', this._updateFolderName, path, newName);
+      const t = this._profiler.hrtime();
+      this._updateFolder(path, oldName, newName);
+      this._profiler.log(t, '%s %s %s', this._updateFolderName, path, newName);
+    } catch (err) {
+      this._logger.logError('%s %o', this._updateFolderName, err);
+      throw err;
+    }
   };
 
+  private _checkIsBotFolderName: string = `${this}.checkIsBotFolder`;
   checkIsBotFolder: (storageId: string, path: string, user?: UserIdentity | undefined) => Promise<boolean> = async (
     storageId,
     path,
     user
   ) => {
-    return await this._checkIsBotFolder(storageId, path, user);
+    try {
+      this._logger.logTrace('%s %s', this._checkIsBotFolderName, path);
+      const t = this._profiler.hrtime();
+      const result = await this._checkIsBotFolder(storageId, path, user);
+      this._profiler.log(t, '%s %s', this._checkIsBotFolderName, path);
+      return result;
+    } catch (err) {
+      this._logger.logError('%s %o', this._checkIsBotFolderName, err);
+      throw err;
+    }
   };
 
   // getChildren: (storage: IFileStorage, dirPath: string) => Promise<IBlobFolderChildContent[]> = async (
