@@ -16,17 +16,17 @@ import {
   TxCopyOperationError,
   TxRenameOperationError,
   TxExistsOperationError,
-} from '../exceptions/telexyExceptions';
+} from '../exceptions/txExceptions';
 //import { IFileStorage, Stat, MakeDirectoryOptions } from '../../../../Composer/packages/server/src/models/storage/interface';
-import { CMFusionFSItemWrapper, FileStat, GlobParametersWrapper } from './telexyFsTypes';
-import { TelexyFsClient } from './telexyFsClient';
+import { CMFusionFSItemWrapper, FileStat, GlobParametersWrapper } from '../txClient/txFsTypes';
+import { TxFsClient } from '../txClient/txFsClient';
 
-export class TelexyStorage implements IFileStorage {
+export class TxStorage implements IFileStorage {
   /**
    *
    */
   constructor(
-    protected client: TelexyFsClient,
+    protected client: TxFsClient,
     protected logger: ILogger,
     protected pathConvertor: IPathConvertor,
     protected profiler: IProfiler

@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import { isString } from 'lodash';
 import merge from 'lodash/merge';
 import { ISettings, LogLevel } from '../common/interfaces';
-import { UnableToLoadConfiguration, UnknownError } from '../exceptions/telexyExceptions';
+import { UnableToLoadConfiguration, UnknownError } from '../exceptions/txExceptions';
 import { IConfiguration } from './abstractions';
 
 export class JsonConfiguration implements IConfiguration {

@@ -17,7 +17,7 @@ import {
   IBotProject,
   UserIdentity,
 } from '@botframework-composer/types';
-import { RuntimeLogServer } from './telexyRuntimeLogServer';
+import { RuntimeLogServer } from './txRuntimeLogServer';
 import { ILogger, IProfiler } from '../common/interfaces';
 
 interface RunningBot {

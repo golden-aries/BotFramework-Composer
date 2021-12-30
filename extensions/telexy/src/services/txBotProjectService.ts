@@ -1,11 +1,11 @@
-import { BotProjectService } from './../../../../Composer/packages/server/build/services/project';
-import { LocationRef } from './../../../../Composer/packages/server/build/models/bot/interface';
+import { BotProjectService } from '../../../../Composer/packages/server/build/services/project';
+import { LocationRef } from '../../../../Composer/packages/server/build/models/bot/interface';
 import { UserIdentity } from '@botframework-composer/types';
 import { Request as ExpressRequest } from 'express';
 import { IBotProjectService } from '../common/iBotProjectService';
 import { ILogger, IProfiler } from '../common/interfaces';
 
-export class TelexyBotProjectService implements IBotProjectService {
+export class TxBotProjectService implements IBotProjectService {
   private _originalOpenProjectAsync: (
     locationRef: LocationRef,
     user?: UserIdentity | undefined,

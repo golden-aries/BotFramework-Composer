@@ -1,17 +1,13 @@
 import { IncomingHttpHeaders } from 'http';
 import syncRequest, { Options, Response } from 'sync-request';
 import { ILogger, ISettings } from '../common/interfaces';
-import {
-  ApiException,
-  ResultIsNotABooleanValueException,
-  TxExistsOperationError,
-} from '../exceptions/telexyExceptions';
+import { ApiException, ResultIsNotABooleanValueException, TxExistsOperationError } from '../exceptions/txExceptions';
 import { IFetch } from '../common/interfaces';
-import { CMFusionFSItemWrapper, FileStat, IGlobParametersWrapper } from './telexyFsTypes';
-import { TelexyFsClient } from './telexyFsClient';
+import { CMFusionFSItemWrapper, FileStat, IGlobParametersWrapper } from './txFsTypes';
+import { TxFsClient } from './txFsClient';
 import _ from 'lodash';
 
-export class TelexyFsClientSync extends TelexyFsClient {
+export class TxFsClientSync extends TxFsClient {
   /**
    *
    */

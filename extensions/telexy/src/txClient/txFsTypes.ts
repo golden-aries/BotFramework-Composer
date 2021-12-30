@@ -9,7 +9,7 @@
 
 import _ from 'lodash';
 import { IFetch, ILogger, ISettings } from '../common/interfaces';
-import { ApiException, ResultIsNotABooleanValueException } from '../exceptions/telexyExceptions';
+import { ApiException, ResultIsNotABooleanValueException } from '../exceptions/txExceptions';
 import { RequestOptionsBuilder } from './requestOptionsBuilder';
 
 export class CMFusionFSDataSourceClient {

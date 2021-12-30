@@ -1,15 +1,15 @@
 import path from 'path';
-import { IFetch, ILogger, IPathConvertor, IProfiler, ISettings, LogLevel } from '../common/interfaces';
-import { IConfiguration } from '../configuration/abstractions';
-import { JsonConfiguration } from '../configuration/jsonConfiguration';
-import { TelexyFsClientSync } from '../fsClient/TelexyFsClientSync';
-import { TelexyStorageSync } from '../fsClient/telexyStorageSync';
-import { ConsoleLogger } from '../log/logger';
+import { IFetch, ILogger, IPathConvertor, IProfiler, ISettings, LogLevel } from './common/interfaces';
+import { IConfiguration } from './configuration/abstractions';
+import { JsonConfiguration } from './configuration/jsonConfiguration';
+import { TxFsClientSync } from './txClient/txFsClientSync';
+import { TxStorageSync } from './storage/txStorageSync';
+import { ConsoleLogger } from './log/txLogger';
 import os from 'os';
-import { PathConvertor } from '../fsClient/pathConvertor';
-import { Profiler } from '../common/profiler';
-import { IBotProjectService } from '../common/iBotProjectService';
-import { TelexyBotProjectService } from './telexyBotProjectService';
+import { PathConvertor } from './txClient/pathConvertor';
+import { Profiler } from './common/txProfiler';
+import { IBotProjectService } from './common/iBotProjectService';
+import { TxBotProjectService } from './services/txBotProjectService';
 import {
   DialogSetting,
   PublishPlugin,
@@ -17,17 +17,17 @@ import {
   IBotProject,
   UserIdentity,
 } from '@botframework-composer/types';
-import { PublishConfig, TelexyPublisher } from '../publish/telexyPublish';
-import originalStorageService from '../../../../Composer/packages/server/build/services/storage';
-import { IStorageService } from '../common/iStorageService';
-import { TelexyStorageService } from './telexyStorageService';
+import { PublishConfig, TelexyPublisher } from './publish/txPublish';
+import originalStorageService from '../../../Composer/packages/server/build/services/storage';
+import { IStorageService } from './common/iStorageService';
+import { TelexyStorageService } from './services/txStorageService';
 
 let settings: ISettings;
 let logger: ILogger;
 let pathConvertor: IPathConvertor;
 let profiler: IProfiler;
 let botProjectService: IBotProjectService;
-let telexyFsClientSync: TelexyFsClientSync;
+let telexyFsClientSync: TxFsClientSync;
 let publisher: PublishPlugin<PublishConfig>;
 let storageService: IStorageService;
 
@@ -41,7 +41,7 @@ export async function initServices(botsFolder: string) {
   logger = new ConsoleLogger(settings);
   profiler = new Profiler(settings, logger);
   initTelexyFsClientSync();
-  botProjectService = new TelexyBotProjectService(logger, profiler);
+  botProjectService = new TxBotProjectService(logger, profiler);
   storageService = new TelexyStorageService(originalStorageService, logger, profiler);
   logger.logTrace('Telexy Services Initialized');
 }
@@ -50,6 +50,7 @@ function defaultSettings(): ISettings {
   return {
     baseUrl: 'http://localhost',
     apiKey: '',
+    keyCookie: '',
     logLevel: LogLevel.Warning,
     botsFolder: os.homedir(),
     performanceProfiling: false,
@@ -83,11 +84,11 @@ function getFetch(): IFetch {
   return _cachedFetch ?? (_cachedFetch = { fetch: fetch });
 }
 
-export function initTelexyFsClientSync(): TelexyFsClientSync {
-  return telexyFsClientSync ?? (telexyFsClientSync = new TelexyFsClientSync(settings, getFetch(), logger));
+export function initTelexyFsClientSync(): TxFsClientSync {
+  return telexyFsClientSync ?? (telexyFsClientSync = new TxFsClientSync(settings, getFetch(), logger));
 }
 
-export class Storage extends TelexyStorageSync {
+class TxStorageWrapper extends TxStorageSync {
   /**
    *
    */

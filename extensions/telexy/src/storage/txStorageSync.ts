@@ -4,22 +4,17 @@ import {
   TxFileSystemOperationError,
   TxGlobOperationError,
   UnknownError,
-} from '../exceptions/telexyExceptions';
+} from '../exceptions/txExceptions';
 
 //import { Stat, MakeDirectoryOptions } from '../../../../Composer/packages/server/src/models/storage/interface';
-import { TelexyFsClientSync } from './TelexyFsClientSync';
-import { TelexyStorage } from './telexyStorage';
+import { TxFsClientSync } from '../txClient/txFsClientSync';
+import { TxStorage } from './txStorage';
 
-export class TelexyStorageSync extends TelexyStorage {
+export class TxStorageSync extends TxStorage {
   /**
    *
    */
-  constructor(
-    protected client: TelexyFsClientSync,
-    logger: ILogger,
-    pathConvertor: IPathConvertor,
-    profiler: IProfiler
-  ) {
+  constructor(protected client: TxFsClientSync, logger: ILogger, pathConvertor: IPathConvertor, profiler: IProfiler) {
     super(client, logger, pathConvertor, profiler);
   }
 

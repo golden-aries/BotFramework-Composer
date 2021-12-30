@@ -5,6 +5,7 @@ export interface IBotComposerLogger {
 export interface ISettings {
   baseUrl: string;
   apiKey: string;
+  keyCookie: string;
   logLevel: LogLevel;
   botsFolder: string;
   performanceProfiling: boolean;
