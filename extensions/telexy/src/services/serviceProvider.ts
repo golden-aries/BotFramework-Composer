@@ -18,6 +18,9 @@ import {
   UserIdentity,
 } from '@botframework-composer/types';
 import { PublishConfig, TelexyPublisher } from '../publish/telexyPublish';
+import originalStorageService from '../../../../Composer/packages/server/build/services/storage';
+import { IStorageService } from '../common/iStorageService';
+import { TelexyStorageService } from './telexyStorageService';
 
 let settings: ISettings;
 let logger: ILogger;
@@ -26,6 +29,7 @@ let profiler: IProfiler;
 let botProjectService: IBotProjectService;
 let telexyFsClientSync: TelexyFsClientSync;
 let publisher: PublishPlugin<PublishConfig>;
+let storageService: IStorageService;
 
 /**
  * @param botsFolder - botsFolder as configured in Composer
@@ -38,6 +42,7 @@ export async function initServices(botsFolder: string) {
   profiler = new Profiler(settings, logger);
   initTelexyFsClientSync();
   botProjectService = new TelexyBotProjectService(logger, profiler);
+  storageService = new TelexyStorageService(originalStorageService, logger, profiler);
   logger.logTrace('Telexy Services Initialized');
 }
 

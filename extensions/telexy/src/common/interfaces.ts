@@ -84,5 +84,5 @@ export interface IPathConvertor {
 /** simple performance profiler */
 export interface IProfiler {
   hrtime(): bigint | undefined;
-  loghrtime(msg: string, details: any, previousTime?: bigint): void;
+  loghrtime(msg: any, details: any, previousTime?: bigint): void;
 }

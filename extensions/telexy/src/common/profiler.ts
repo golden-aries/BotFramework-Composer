@@ -12,7 +12,7 @@ export class Profiler implements IProfiler {
     return undefined;
   }
 
-  loghrtime(msg: string, details: any, previousTime?: bigint): void {
+  loghrtime(msg: any, details: any, previousTime?: bigint): void {
     if (previousTime) {
       const elapsed = process.hrtime.bigint() - previousTime;
       const span = new Span(elapsed);

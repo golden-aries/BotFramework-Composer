@@ -15,7 +15,7 @@ export interface IStorageService {
 
   checkBlob: (storageId: string, filePath: string, user?: UserIdentity) => Promise<boolean>;
 
-  getBlobDateModified: (storageId: string, filePath: string, user?: UserIdentity) => string;
+  getBlobDateModified: (storageId: string, filePath: string, user?: UserIdentity) => Promise<string>;
 
   getBlob: (storageId: string, filePath: string, user?: UserIdentity) => Promise<IBlobRootContent | IBlobFolderContent>;
 
@@ -28,6 +28,4 @@ export interface IStorageService {
   updateFolder: (path: string, oldName: string, newName: string) => void;
 
   checkIsBotFolder: (storageId: string, path: string, user?: UserIdentity | undefined) => Promise<boolean>;
-
-  getChildren: (storage: IFileStorage, dirPath: string) => Promise<IBlobFolderChildContent[]>;
 }

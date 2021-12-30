@@ -1,30 +1,31 @@
 import { UserIdentity } from '@botframework-composer/types';
 import { IFileStorage, StorageConnection } from '../../../../Composer/packages/server/build/models/storage/interface';
 import { IBlobRootContent, IBlobFolderContent, IBlobFolderChildContent } from '../common/iFileSystemContentInterfaces';
+import { ILogger, IProfiler } from '../common/interfaces';
 import { IStorageService } from '../common/iStorageService';
 
 export class TelexyStorageService implements IStorageService {
-  private _getStorageClient: (storageId: string, user?: UserIdentity | undefined) => IFileStorage;
+  private _getStorageClient: (storageId: string, user?: UserIdentity) => IFileStorage;
   private _createStorageConnection: (connection: StorageConnection) => void;
   private _getStorageConnections: () => StorageConnection[];
-  private _checkBlob: (storageId: string, filePath: string, user?: UserIdentity | undefined) => Promise<boolean>;
-  private _getBlobDateModified: (storageId: string, filePath: string, user?: UserIdentity | undefined) => string;
+  private _checkBlob: (storageId: string, filePath: string, user?: UserIdentity) => Promise<boolean>;
+  private _getBlobDateModified: (storageId: string, filePath: string, user?: UserIdentity) => Promise<string>;
   private _getBlob: (
     storageId: string,
     filePath: string,
-    user?: UserIdentity | undefined
+    user?: UserIdentity
   ) => Promise<IBlobRootContent | IBlobFolderContent>;
   private _updateCurrentPath: (path: string, storageId: string) => StorageConnection[];
   private _validatePath: (path: string) => '' | 'The path does not exist' | 'This is not a directory';
   private _createFolder: (path: string) => void;
   private _updateFolder: (path: string, oldName: string, newName: string) => void;
   private _checkIsBotFolder: (storageId: string, path: string, user?: UserIdentity | undefined) => Promise<boolean>;
-  private _getChildren: (storage: IFileStorage, dirPath: string) => Promise<IBlobFolderChildContent[]>;
+  //private _getChildren: (storage: IFileStorage, dirPath: string) => Promise<IBlobFolderChildContent[]>;
 
   /**
    *
    */
-  constructor(private _originalService: IStorageService) {
+  constructor(private _originalService: IStorageService, private _logger: ILogger, private _profiler: IProfiler) {
     if (!_originalService) {
       throw new Error('Original Storage Service is falsy!');
     }
@@ -49,11 +50,11 @@ export class TelexyStorageService implements IStorageService {
     _originalService.updateFolder = this.updateFolder;
     this._checkIsBotFolder = _originalService.checkIsBotFolder;
     _originalService.checkIsBotFolder = this.checkIsBotFolder;
-    this._getChildren = _originalService.getChildren;
-    _originalService.getChildren = this.getChildren;
+    // this._getChildren = _originalService.getChildren;
+    // _originalService.getChildren = this.getChildren;
   }
 
-  getStorageClient: (storageId: string, user?: UserIdentity | undefined) => IFileStorage = (storageId, user) => {
+  getStorageClient: (storageId: string, user?: UserIdentity) => IFileStorage = (storageId, user) => {
     return this._getStorageClient(storageId, user);
   };
 
@@ -62,31 +63,56 @@ export class TelexyStorageService implements IStorageService {
   };
 
   getStorageConnections: () => StorageConnection[] = () => {
-    return this._getStorageConnections();
+    try {
+      this._logger.logTrace('%s.getStorageConnections ', this);
+      const result = this._getStorageConnections() ?? [];
+      return result;
+    } catch (err) {
+      this._logger.logError('%s %o', this, err);
+      throw err;
+    }
   };
 
-  checkBlob: (storageId: string, filePath: string, user?: UserIdentity | undefined) => Promise<boolean> = async (
+  checkBlob: (storageId: string, filePath: string, user?: UserIdentity) => Promise<boolean> = async (
     storageId,
     filePath,
     user
   ) => {
-    return await this._checkBlob(storageId, filePath, user);
+    try {
+      this._logger.logTrace('%s.checkBlob', this);
+      const t = this._profiler.hrtime();
+      const result = await this._checkBlob(storageId, filePath, user);
+      this._profiler.loghrtime(this, 'checkBlob', t);
+      return result;
+    } catch (err) {
+      this._logger.logError('%s.checkBlob %o', this, err);
+      throw err;
+    }
   };
 
-  getBlobDateModified: (storageId: string, filePath: string, user?: UserIdentity | undefined) => string = (
+  getBlobDateModified: (storageId: string, filePath: string, user?: UserIdentity) => Promise<string> = async (
     storageId,
     filePath,
     user
   ) => {
-    return this._getBlobDateModified(storageId, filePath, user);
+    return await this._getBlobDateModified(storageId, filePath, user);
   };
 
   getBlob: (
     storageId: string,
     filePath: string,
-    user?: UserIdentity | undefined
+    user?: UserIdentity
   ) => Promise<IBlobRootContent | IBlobFolderContent> = async (storageId, filePath, user) => {
-    return await this._getBlob(storageId, filePath, user);
+    try {
+      this._logger.logTrace('%s.getBlob %s', this, filePath);
+      const t = this._profiler.hrtime();
+      const result = await this._getBlob(storageId, filePath, user);
+      this._profiler.loghrtime(this, 'getBlob', t);
+      return result;
+    } catch (err) {
+      this._logger.logError('%s %s %o', this, 'getBlob', err);
+      throw err;
+    }
   };
 
   updateCurrentPath: (path: string, storageId: string) => StorageConnection[] = (path, storageId) => {
@@ -113,10 +139,14 @@ export class TelexyStorageService implements IStorageService {
     return await this._checkIsBotFolder(storageId, path, user);
   };
 
-  getChildren: (storage: IFileStorage, dirPath: string) => Promise<IBlobFolderChildContent[]> = async (
-    storageId,
-    dirPath
-  ) => {
-    return await this._getChildren(storageId, dirPath);
-  };
+  // getChildren: (storage: IFileStorage, dirPath: string) => Promise<IBlobFolderChildContent[]> = async (
+  //   storageId,
+  //   dirPath
+  // ) => {
+  //   return await this._getChildren(storageId, dirPath);
+  // };
+
+  toString(): string {
+    return 'TelexyStorageService';
+  }
 }
