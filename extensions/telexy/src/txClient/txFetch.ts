@@ -17,7 +17,10 @@ export class TxFetch implements IFetch {
     }
   }
 
-  async fetch(url: RequestInfo, init?: RequestInit): Promise<Response> {
+  fetch: (url: RequestInfo, init?: RequestInit) => Promise<Response> = async (
+    url: RequestInfo,
+    init?: RequestInit
+  ): Promise<Response> => {
     try {
       const response = await this._http.fetch(url, init);
       if (!response.ok) {
@@ -30,7 +33,7 @@ export class TxFetch implements IFetch {
       this._logger.logError('%s %o', this, err);
       throw err;
     }
-  }
+  };
 
   toString() {
     return 'TxFetch';
