@@ -1,15 +1,57 @@
 import { UserIdentity } from '@botframework-composer/types';
+import { IFetch, ILogger, IProfiler } from '../common/interfaces';
 import { ITxClient } from '../common/iTxClient';
 import { ITxServerInfo } from '../common/iTxServerInfo';
+import { RequestOptionsBuilder } from './requestOptionsBuilder';
+import { TxClientRequestOptionsBuilder } from './txClientRequestOptionsBuilder';
 
 export class TxClient implements ITxClient {
   /**
    *
    */
-  constructor(private _serverInfo: ITxServerInfo) {}
+  constructor(
+    private _serverInfo: ITxServerInfo,
+    private _http: IFetch,
+    private _logger: ILogger,
+    private _profiler: IProfiler
+  ) {
+    if (!_serverInfo) {
+      throw new Error('Constructor argument "serverInfo" is falsy');
+    }
+    if (!_http) {
+      throw new Error('Constructor argument "http" is falsy');
+    }
+    if (!_logger) {
+      throw new Error('Constructor argument "logger" is falsy');
+    }
+    if (!_profiler) {
+      throw new Error('Constructor argument "profiler" is falsy');
+    }
+  }
 
-  async checkBlob(storageId: string, filePath: string, user?: UserIdentity): Promise<boolean> {
+  async checkBlob(path: string, user?: UserIdentity): Promise<boolean> {
     return Promise.resolve(true);
+  }
+
+  async getBlob(path: string, user?: UserIdentity): Promise<string> {
+    try {
+      const response = await this._http.fetch(
+        this._getBlobUrl(path),
+        this._getBlobRequestOptionsBuilder().buildRequestInit()
+      );
+      const result = await response.text();
+      return result;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  private _getBlobUrl(path: string): RequestInfo {
+    return this._getTargetUrl('BotController', 'GetBlob', { path: path });
+  }
+
+  private _getBlobRequestOptionsBuilder(): TxClientRequestOptionsBuilder {
+    return new TxClientRequestOptionsBuilder(this._serverInfo.sessionCookie).withHeader_Accept_ApplicationJson();
   }
 
   /**
@@ -18,7 +60,7 @@ export class TxClient implements ITxClient {
    * @param action
    * @param query
    */
-  getTargetUrl(controller: string, action: string, query?: { [key: string]: string }): string {
+  _getTargetUrl(controller: string, action: string, query?: { [key: string]: string }): string {
     let queryStr = '';
     if (query) {
       Object.keys(query).forEach((key: string) => {

@@ -26,9 +26,11 @@ import { TelexyStorageService } from './services/txStorageService';
 import { ITxServerInfo } from './common/iTxServerInfo';
 import { ITxClient } from './common/iTxClient';
 import { TxClient } from './txClient/txClient';
+import { TxFetch } from './txClient/txFetch';
 
 let settings: ISettings;
 let logger: ILogger;
+let cachedFetch: IFetch;
 let pathConvertor: IPathConvertor;
 let profiler: IProfiler;
 let botProjectService: IBotProjectService;
@@ -43,13 +45,14 @@ let txClient: ITxClient;
  */
 export async function initServices(botsFolder: string) {
   settings = await initSettings(botsFolder);
-  pathConvertor = new PathConvertor(settings.botsFolder);
-  logger = new ConsoleLogger(settings);
-  profiler = new Profiler(settings, logger);
+  pathConvertor = new PathConvertor(getSettings().botsFolder);
+  logger = new ConsoleLogger(getSettings());
+  cachedFetch = new TxFetch({ fetch: fetch }, getLogger());
+  profiler = new Profiler(getSettings(), getLogger());
   initTelexyFsClientSync();
-  botProjectService = new TxBotProjectService(logger, profiler);
-  serverInfo = await initTxServerInfo(settings);
-  txClient = initTxClient(serverInfo);
+  botProjectService = new TxBotProjectService(getLogger(), getProfier());
+  serverInfo = await initTxServerInfo(getSettings());
+  txClient = new TxClient(serverInfo, getFetch(), getLogger(), getProfier());
   storageService = new TelexyStorageService(originalStorageService, logger, profiler);
   logger.logTrace('Telexy Services Initialized');
 }
@@ -87,9 +90,25 @@ async function initSettings(botsFolder: string): Promise<ISettings> {
   return finalSettings;
 }
 
-let _cachedFetch: IFetch;
 function getFetch(): IFetch {
-  return _cachedFetch ?? (_cachedFetch = { fetch: fetch });
+  if (!cachedFetch) {
+    throw new Error('Fetch is not initialized');
+  }
+  return cachedFetch;
+}
+
+function getLogger(): ILogger {
+  if (!logger) {
+    throw new Error('Logger is not initialized');
+  }
+  return logger;
+}
+
+function getProfier(): IProfiler {
+  if (!profiler) {
+    throw new Error('Profiler is not initialized');
+  }
+  return profiler;
 }
 
 export function initTelexyFsClientSync(): TxFsClientSync {
@@ -133,13 +152,15 @@ function normalizeUri(uri: string) {
   return lodash.trimEnd(uri.toLowerCase(), '/');
 }
 
-function initTxClient(serverInfo: ITxServerInfo) {
-  return new TxClient(serverInfo);
-}
-
 export function getTxClient() {
   if (txClient) {
     return txClient;
   }
   throw new Error('Telexy Client has not been initialized!');
+}
+function getSettings(): ISettings {
+  if (settings) {
+    return settings;
+  }
+  throw new Error('Telexy settings has not been initialized!');
 }
