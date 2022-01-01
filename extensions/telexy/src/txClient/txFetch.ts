@@ -24,6 +24,7 @@ export class TxFetch implements IFetch {
     try {
       const response = await this._http.fetch(url, init);
       if (!response.ok) {
+        throw new Error(`${this}: ${response.status} ${response.statusText}`);
       } else if (response.headers.has('fusionerror')) {
         const err = await response.json();
         throw err;

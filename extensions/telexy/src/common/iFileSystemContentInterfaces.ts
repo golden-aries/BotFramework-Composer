@@ -15,7 +15,7 @@ export interface IBlobRootChildContent {
   name: string;
   type: string;
   path: string;
-  writeable: string;
+  writeable: boolean;
 }
 
 export interface IBlobFolderContent {

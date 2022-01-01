@@ -152,7 +152,7 @@ function normalizeUri(uri: string) {
   return lodash.trimEnd(uri.toLowerCase(), '/');
 }
 
-export function getTxClient() {
+export function getTxClient(): ITxClient {
   if (txClient) {
     return txClient;
   }
