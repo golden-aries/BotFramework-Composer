@@ -26,4 +26,11 @@ export class PathConvertor implements IPathConvertor {
     }
     return transformedPath;
   }
+
+  join(...paths: string[]): string {
+    if (this.storageRoot === '/' && this.storageSep === '/') {
+      return path.posix.join(...paths);
+    }
+    throw new Error('Not implemented yet!');
+  }
 }

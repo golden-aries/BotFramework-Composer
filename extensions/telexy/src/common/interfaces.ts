@@ -85,6 +85,7 @@ export interface MakeDirectoryOptions {
 export interface IPathConvertor {
   toStoragePath(localPath: string): string;
   toLocalPath(storagePath: string): string;
+  join(...paths: string[]): string;
 }
 
 /** simple performance profiler */

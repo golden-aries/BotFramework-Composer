@@ -13,8 +13,8 @@ async function initialize(registration: IExtensionRegistration): Promise<void> {
   // register this publishing method with Composer
   await registration.addPublishMethod(publisher);
   await initRuntimes(registration);
-  const client = getTxClient();
-  const result = await client.getBlob('/');
+  // const client = getTxClient();
+  // const result = await client.getBlob('/');
 }
 
 module.exports = {

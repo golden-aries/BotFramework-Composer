@@ -1,4 +1,5 @@
 import { UserIdentity } from '@botframework-composer/types';
+import { IBlobRootContent } from '../common/iFileSystemContentInterfaces';
 import { IFetch, ILogger, IProfiler } from '../common/interfaces';
 import { ITxClient } from '../common/iTxClient';
 import { ITxServerInfo } from '../common/iTxServerInfo';
@@ -55,6 +56,19 @@ export class TxClient implements ITxClient {
     return Promise.resolve(true);
   }
 
+  async getRootBlob(): Promise<IBlobRootContent> {
+    try {
+      const url = this._getRootBlobUrl();
+      const init = this._getBlobRequestOptionsBuilder().buildRequestInit();
+      const response = await this._http.fetch(url, init);
+      const json = await response.text();
+      const result = JSON.parse(json);
+      return result;
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async getBlob(path: string, user?: UserIdentity): Promise<string> {
     try {
       const url = this._getBlobUrl(path);
@@ -65,6 +79,10 @@ export class TxClient implements ITxClient {
     } catch (err) {
       throw err;
     }
+  }
+
+  private _getRootBlobUrl(): RequestInfo {
+    return this._getTargetUrl('BotProviderBfcApi', 'getBots'); //{ path: path }
   }
 
   private _getBlobUrl(path: string): RequestInfo {

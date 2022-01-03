@@ -14,7 +14,7 @@ export interface IBlobRootContent {
 export interface IBlobRootChildContent {
   name: string;
   type: string;
-  path: string;
+  path: FsEntryType;
   writeable: boolean;
 }
 

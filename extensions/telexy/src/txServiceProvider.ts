@@ -22,11 +22,12 @@ import {
 import { PublishConfig, TelexyPublisher } from './publish/txPublish';
 import originalStorageService from '../../../Composer/packages/server/build/services/storage';
 import { IStorageService } from './common/iStorageService';
-import { TelexyStorageService } from './services/txStorageService';
+import { TxStorageService } from './services/txStorageService';
 import { ITxServerInfo } from './common/iTxServerInfo';
 import { ITxClient } from './common/iTxClient';
 import { TxClient } from './txClient/txClient';
 import { TxFetch } from './txClient/txFetch';
+import { TxBotStorageService } from './services/txBotStorageService';
 
 let settings: ISettings;
 let logger: ILogger;
@@ -53,7 +54,7 @@ export async function initServices(botsFolder: string) {
   botProjectService = new TxBotProjectService(getLogger(), getProfier());
   serverInfo = await initTxServerInfo(getSettings());
   txClient = new TxClient(serverInfo, getFetch(), getLogger(), getProfier());
-  storageService = new TelexyStorageService(originalStorageService, logger, profiler);
+  storageService = new TxBotStorageService(originalStorageService, getLogger(), getProfier());
   logger.logTrace('Telexy Services Initialized');
 }
 
@@ -163,4 +164,10 @@ function getSettings(): ISettings {
     return settings;
   }
   throw new Error('Telexy settings has not been initialized!');
+}
+function getPathConvertor(): IPathConvertor {
+  if (pathConvertor) {
+    return pathConvertor;
+  }
+  throw new Error('Telexy path convertor has not been initialized!');
 }
