@@ -14,7 +14,8 @@ async function initialize(registration: IExtensionRegistration): Promise<void> {
   await registration.addPublishMethod(publisher);
   await initRuntimes(registration);
   // const client = getTxClient();
-  // const result = await client.getBlob('/');
+  // const bots = await client.getBots();
+  // const check = await client.checkBot("BotB");
 }
 
 module.exports = {

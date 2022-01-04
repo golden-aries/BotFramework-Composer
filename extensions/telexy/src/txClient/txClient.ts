@@ -52,14 +52,10 @@ export class TxClient implements ITxClient {
     });
   }
 
-  async checkBlob(path: string, user?: UserIdentity): Promise<boolean> {
-    return Promise.resolve(true);
-  }
-
-  async getRootBlob(): Promise<IBlobRootContent> {
+  async getBots(): Promise<IBlobRootContent> {
     try {
-      const url = this._getRootBlobUrl();
-      const init = this._getBlobRequestOptionsBuilder().buildRequestInit();
+      const url = this._getBotsUrl();
+      const init = this._getBotsRequestOptionsBuilder().buildRequestInit();
       const response = await this._http.fetch(url, init);
       const json = await response.text();
       const result = JSON.parse(json);
@@ -69,27 +65,32 @@ export class TxClient implements ITxClient {
     }
   }
 
-  async getBlob(path: string, user?: UserIdentity): Promise<string> {
+  async checkBot(path: string): Promise<boolean> {
     try {
-      const url = this._getBlobUrl(path);
-      const init = this._getBlobRequestOptionsBuilder().buildRequestInit();
+      const url = this._checkBotUrl(path);
+      const init = this._checkBotRequestOptionsBuilder().buildRequestInit();
       const response = await this._http.fetch(url, init);
-      const result = await response.text();
+      const json = await response.text();
+      const result = JSON.parse(json);
       return result;
     } catch (err) {
       throw err;
     }
   }
 
-  private _getRootBlobUrl(): RequestInfo {
-    return this._getTargetUrl('BotProviderBfcApi', 'getBots'); //{ path: path }
+  private _getBotsUrl(): RequestInfo {
+    return this._getTargetUrl('BotProviderBfcApi', 'getBots');
   }
 
-  private _getBlobUrl(path: string): RequestInfo {
-    return this._getTargetUrl('BotProviderBfcApi', 'getBots'); //{ path: path }
+  private _checkBotUrl(name: string): RequestInfo {
+    return this._getTargetUrl('BotProviderBfcApi', 'checkBot', { name: name });
   }
 
-  private _getBlobRequestOptionsBuilder(): TxClientRequestOptionsBuilder {
+  private _getBotsRequestOptionsBuilder(): TxClientRequestOptionsBuilder {
+    return new TxClientRequestOptionsBuilder(this._sessionCookie).withHeader_Accept_ApplicationJson();
+  }
+
+  private _checkBotRequestOptionsBuilder(): TxClientRequestOptionsBuilder {
     return new TxClientRequestOptionsBuilder(this._sessionCookie).withHeader_Accept_ApplicationJson();
   }
 

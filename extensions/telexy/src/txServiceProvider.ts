@@ -54,7 +54,13 @@ export async function initServices(botsFolder: string) {
   botProjectService = new TxBotProjectService(getLogger(), getProfier());
   serverInfo = await initTxServerInfo(getSettings());
   txClient = new TxClient(serverInfo, getFetch(), getLogger(), getProfier());
-  storageService = new TxBotStorageService(originalStorageService, getLogger(), getProfier());
+  storageService = new TxBotStorageService(
+    getTxClient(),
+    botsFolder,
+    originalStorageService,
+    getLogger(),
+    getProfier()
+  );
   logger.logTrace('Telexy Services Initialized');
 }
 

@@ -3,13 +3,20 @@ import { StorageConnection } from '../../../../Composer/packages/server/build/mo
 import { IBlobRootContent, IBlobFolderContent } from '../common/iFileSystemContentInterfaces';
 import { IFileStorage, ILogger, IProfiler } from '../common/interfaces';
 import { IStorageService } from '../common/iStorageService';
+import { ITxClient } from '../common/iTxClient';
 import { TxStorageService } from './txStorageService';
 
 export class TxBotStorageService extends TxStorageService {
   /**
    *
    */
-  constructor(originalService: IStorageService, logger: ILogger, profiler: IProfiler) {
+  constructor(
+    private _txClient: ITxClient,
+    private _botsFolder: string,
+    originalService: IStorageService,
+    logger: ILogger,
+    profiler: IProfiler
+  ) {
     super(originalService, logger, profiler);
     originalService.checkBlob = this.checkBlob;
     originalService.getBlob = this.getBlob;
