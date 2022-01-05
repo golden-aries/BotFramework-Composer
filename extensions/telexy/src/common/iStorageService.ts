@@ -19,13 +19,13 @@ export interface IStorageService {
 
   getBlob: (storageId: string, filePath: string, user?: UserIdentity) => Promise<IBlobRootContent | IBlobFolderContent>;
 
-  updateCurrentPath: (path: string, storageId: string) => IStorageConnection[];
+  updateCurrentPath: (filePath: string, storageId: string) => IStorageConnection[];
 
-  validatePath: (path: string) => '' | 'The path does not exist' | 'This is not a directory';
+  validatePath: (filePath: string) => '' | 'The path does not exist' | 'This is not a directory';
 
-  createFolder: (path: string) => void;
+  createFolder: (filePath: string) => void;
 
-  updateFolder: (path: string, oldName: string, newName: string) => void;
+  updateFolder: (filePath: string, oldName: string, newName: string) => void;
 
-  checkIsBotFolder: (storageId: string, path: string, user?: UserIdentity | undefined) => Promise<boolean>;
+  checkIsBotFolder: (storageId: string, filePath: string, user?: UserIdentity | undefined) => Promise<boolean>;
 }

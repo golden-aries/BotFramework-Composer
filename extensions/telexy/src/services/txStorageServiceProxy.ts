@@ -22,7 +22,7 @@ export class TxStorageServiceProxy implements IStorageService {
   private _validatePath: (path: string) => '' | 'The path does not exist' | 'This is not a directory';
   private _createFolder: (path: string) => void;
   private _updateFolder: (path: string, oldName: string, newName: string) => void;
-  private _checkIsBotFolder: (storageId: string, path: string, user?: UserIdentity | undefined) => Promise<boolean>;
+  protected _checkIsBotFolder: (storageId: string, path: string, user?: UserIdentity | undefined) => Promise<boolean>;
   //private _getChildren: (storage: IFileStorage, dirPath: string) => Promise<IBlobFolderChildContent[]>;
 
   /**
@@ -185,20 +185,20 @@ export class TxStorageServiceProxy implements IStorageService {
     }
   };
 
-  private _checkIsBotFolderName: string = `${this}.checkIsBotFolder`;
-  checkIsBotFolder: (storageId: string, path: string, user?: UserIdentity | undefined) => Promise<boolean> = async (
+  protected checkIsBotFolderName: string = `${this}.checkIsBotFolder`;
+  checkIsBotFolder: (storageId: string, filePath: string, user?: UserIdentity | undefined) => Promise<boolean> = async (
     storageId,
-    path,
+    filePath,
     user
   ) => {
     try {
-      this.logger.logTrace('%s %s', this._checkIsBotFolderName, path);
+      this.logger.logTrace('%s %s', this.checkIsBotFolderName, filePath);
       const t = this.profiler.hrtime();
-      const result = await this._checkIsBotFolder(storageId, path, user);
-      this.profiler.log(t, '%s %s', this._checkIsBotFolderName, path);
+      const result = await this._checkIsBotFolder(storageId, filePath, user);
+      this.profiler.log(t, '%s %s', this.checkIsBotFolderName, filePath);
       return result;
     } catch (err) {
-      this.logger.logError('%s %o', this._checkIsBotFolderName, err);
+      this.logger.logError('%s %o', this.checkIsBotFolderName, err);
       throw err;
     }
   };
@@ -211,6 +211,6 @@ export class TxStorageServiceProxy implements IStorageService {
   // };
 
   toString(): string {
-    return 'TxStorageService';
+    return 'TxStorageServiceProxy';
   }
 }

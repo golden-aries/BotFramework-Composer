@@ -18,18 +18,18 @@ export class TxProjectServiceProxy implements IBotProjectService {
   /**
    *
    */
-  constructor(private _logger: ILogger, private _profiler: IProfiler) {
-    if (!this._logger) {
+  constructor(protected logger: ILogger, protected profiler: IProfiler) {
+    if (!this.logger) {
       throw new Error(`${this}.constructor: parameter _logger is not provided`);
     }
-    if (!this._profiler) {
+    if (!this.profiler) {
       throw new Error(`${this}.constructor: parameter _profiler is not provided`);
     }
     this._originalOpenProjectAsync = BotProjectService.openProject;
     this._originalCreateProjectAsync = BotProjectService.createProjectAsync;
     BotProjectService.openProject = this.openProjectAsync;
     BotProjectService.createProjectAsync = this.createProjectAsync;
-    this._logger.logTrace('%s created!', this);
+    this.logger.logTrace('%s created!', this);
   }
 
   private _openProjectMsg0: string = `${this}.openProjectAsync`;
@@ -41,14 +41,14 @@ export class TxProjectServiceProxy implements IBotProjectService {
     options?: { allowPartialBots: boolean }
   ) => Promise<string> = async (locationRef, user, isRootBot, options) => {
     // making int an arrow function because it can be called without "this" context
-    this._logger.logTrace(this._openProjectMsg1, locationRef);
-    const t = this._profiler.hrtime();
+    this.logger.logTrace(this._openProjectMsg1, locationRef);
+    const t = this.profiler.hrtime();
     try {
       const result = await this._originalOpenProjectAsync(locationRef, user, isRootBot, options);
-      this._profiler.loghrtime(this._openProjectMsg0, this, t);
+      this.profiler.loghrtime(this._openProjectMsg0, this, t);
       return result;
     } catch (err) {
-      this._logger.logError(this._openProjectMsg1, err);
+      this.logger.logError(this._openProjectMsg1, err);
       throw err;
     }
   };
@@ -59,17 +59,17 @@ export class TxProjectServiceProxy implements IBotProjectService {
   createProjectAsync: (req: ExpressRequest, jobId: string) => Promise<void> = async (req, jobId) => {
     // making it an arrow function because it can be called without "this" context
     try {
-      this._logger.logTrace(this._createProjectMsg1, this, jobId);
-      const t = this._profiler.hrtime();
+      this.logger.logTrace(this._createProjectMsg1, this, jobId);
+      const t = this.profiler.hrtime();
       await this._originalCreateProjectAsync(req, jobId);
-      this._profiler.loghrtime(this._createProjectMsg0, jobId, t);
+      this.profiler.loghrtime(this._createProjectMsg0, jobId, t);
     } catch (err) {
-      this._logger.logError(this._createProjectMsg1, this, err);
+      this.logger.logError(this._createProjectMsg1, this, err);
       throw err;
     }
   };
 
   toString(): string {
-    return 'TelexyBotProjectService';
+    return 'TxProjectServiceProxy';
   }
 }

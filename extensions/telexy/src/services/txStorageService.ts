@@ -1,13 +1,10 @@
 import { UserIdentity } from '@botframework-composer/types';
-import fs from 'fs/promises';
 import path from 'path';
-import { StorageConnection } from '../../../../Composer/packages/server/build/models/storage/interface';
-import { IBlobRootContent, IBlobFolderContent, IBlobFolderChildContent } from '../common/iFileSystemContentInterfaces';
-import { IFileStorage, ILogger, IProfiler } from '../common/interfaces';
+import { IBlobFolderChildContent, IBlobFolderContent, IBlobRootContent } from '../common/iFileSystemContentInterfaces';
+import { ILogger, IProfiler } from '../common/interfaces';
 import { IStorageService } from '../common/iStorageService';
 import { ITxClient } from '../common/iTxClient';
 import { TxPath } from '../common/txPath';
-import { TxFsClient } from '../txClient/txFsClient';
 import { TxStorageServiceProxy } from './txStorageServiceProxy';
 
 /**
@@ -29,6 +26,7 @@ export class TxStorageService extends TxStorageServiceProxy {
     super(originalService, logger, profiler);
     originalService.checkBlob = this.checkBlob;
     originalService.getBlob = this.getBlob;
+    originalService.checkIsBotFolder = this.checkIsBotFolder;
     this._txPath = new TxPath();
   }
 
@@ -53,6 +51,29 @@ export class TxStorageService extends TxStorageServiceProxy {
       return result;
     } catch (err) {
       this.logger.logError('%s %o', this.checkBlobName, err);
+      throw err;
+    }
+  };
+
+  /** @inheritdoc */
+  checkIsBotFolder: (storageId: string, filePath: string, user?: UserIdentity | undefined) => Promise<boolean> = async (
+    storageId,
+    filePath,
+    user
+  ) => {
+    try {
+      this.logger.logTrace('%s %s', this.checkIsBotFolderName, filePath);
+      const t = this.profiler.hrtime();
+      let result: boolean = false;
+      if (this._txPath.isChildOf(filePath, this._botsFolder)) {
+        result = await this._txClient.checkBot(path.basename(filePath));
+      } else {
+        result = await this._checkIsBotFolder(storageId, filePath, user);
+      }
+      this.profiler.log(t, '%s %s', this.checkIsBotFolderName, filePath);
+      return result;
+    } catch (err) {
+      this.logger.logError('%s %o', this.checkIsBotFolderName, err);
       throw err;
     }
   };
@@ -96,6 +117,6 @@ export class TxStorageService extends TxStorageServiceProxy {
   };
 
   toString(): string {
-    return 'TxBotStorageService';
+    return 'TxStorageService';
   }
 }
