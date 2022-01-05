@@ -39,12 +39,12 @@ export class TxBotStorageService extends TxStorageService {
       const t = this.profiler.hrtime();
       // first check blob in a local cache
       let result = await this._checkBlob(storageId, filePath, user);
-      if (!result) {
-        if (path.dirname(filePath).toLowerCase() === this._botsFolder.toLowerCase()) {
-          // this is bot request
-          this.logger.logTrace('%s %s %s', this.checkBlobName, 'calls checkBot for', filePath);
-          result = await this._txClient.checkBot(path.basename(filePath));
-        }
+      if (!result && this._txPath.isChildOf(filePath, this._botsFolder)) {
+        // this is a request for bot which has not ever been open yet,
+        // and therefore is not cached in a local folder
+        // re-check it from the backend
+        this.logger.logTrace('%s %s %s', this.checkBlobName, 'calls checkBot for', filePath);
+        result = await this._txClient.checkBot(path.basename(filePath));
       }
       this.profiler.log(t, '%s %s', this.checkBlobName, filePath);
       return result;
@@ -74,7 +74,7 @@ export class TxBotStorageService extends TxStorageService {
               name: value.name,
               type: 'bot',
               path: path.join(this._botsFolder, value.name),
-              lastModified: value.created.toString(),
+              lastModified: new Date(value.created).toString(),
               size: '',
             };
             return result;
