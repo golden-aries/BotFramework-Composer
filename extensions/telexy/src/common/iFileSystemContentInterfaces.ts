@@ -34,5 +34,5 @@ export interface IBlobFolderChildContent {
 export interface IBlobFolderChildContentRaw {
   name: string;
   writeable: boolean;
-  created: Date;
+  created: string;
 }
