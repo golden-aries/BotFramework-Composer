@@ -5,7 +5,8 @@ import { Request as ExpressRequest } from 'express';
 import { IBotProjectService } from '../common/iBotProjectService';
 import { ILogger, IProfiler } from '../common/interfaces';
 
-export class TxBotProjectService implements IBotProjectService {
+/** Takes over original project service by replacing it's function properties  */
+export class TxProjectServiceProxy implements IBotProjectService {
   private _originalOpenProjectAsync: (
     locationRef: LocationRef,
     user?: UserIdentity | undefined,

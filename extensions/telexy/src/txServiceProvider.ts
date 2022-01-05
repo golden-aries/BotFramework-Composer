@@ -10,7 +10,7 @@ import fs from 'fs/promises';
 import { PathConvertor } from './txClient/pathConvertor';
 import { Profiler } from './common/txProfiler';
 import { IBotProjectService } from './common/iBotProjectService';
-import { TxBotProjectService } from './services/txBotProjectService';
+import { TxProjectServiceProxy } from './services/txProjectServiceProxy';
 import * as lodash from 'lodash';
 import {
   DialogSetting,
@@ -22,12 +22,12 @@ import {
 import { PublishConfig, TelexyPublisher } from './publish/txPublish';
 import originalStorageService from '../../../Composer/packages/server/build/services/storage';
 import { IStorageService } from './common/iStorageService';
-import { TxStorageService } from './services/txStorageService';
+import { TxStorageServiceProxy } from './services/txStorageServiceProxy';
 import { ITxServerInfo } from './common/iTxServerInfo';
 import { ITxClient } from './common/iTxClient';
 import { TxClient } from './txClient/txClient';
 import { TxFetch } from './txClient/txFetch';
-import { TxBotStorageService } from './services/txBotStorageService';
+import { TxStorageService } from './services/txStorageService';
 
 let settings: ISettings;
 let logger: ILogger;
@@ -51,16 +51,10 @@ export async function initServices(botsFolder: string) {
   cachedFetch = new TxFetch({ fetch: fetch }, getLogger());
   profiler = new Profiler(getSettings(), getLogger());
   initTelexyFsClientSync();
-  botProjectService = new TxBotProjectService(getLogger(), getProfier());
+  botProjectService = new TxProjectServiceProxy(getLogger(), getProfier());
   serverInfo = await initTxServerInfo(getSettings());
   txClient = new TxClient(serverInfo, getFetch(), getLogger(), getProfier());
-  storageService = new TxBotStorageService(
-    getTxClient(),
-    botsFolder,
-    originalStorageService,
-    getLogger(),
-    getProfier()
-  );
+  storageService = new TxStorageService(getTxClient(), botsFolder, originalStorageService, getLogger(), getProfier());
   // storageService = new TxStorageService(
   //   originalStorageService,
   //   getLogger(),
