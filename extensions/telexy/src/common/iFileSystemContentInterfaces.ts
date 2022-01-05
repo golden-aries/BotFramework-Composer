@@ -4,13 +4,18 @@ export type BotFsEntry = 'bot';
 export type RootFsEntryName = '/';
 export type FsEntryType = BotFsEntry | FolderFsEntry | FileFsEntry;
 
-export interface IBlobRootContent {
+export interface IBlobContent<T> {
   name: string;
-  parent: RootFsEntryName;
+  parent: string;
   writeable: boolean;
-  children: IBlobRootChildContent[];
+  children: T[];
 }
+export interface IBlobRootContent extends IBlobContent<IBlobRootChildContent> {
+  parent: RootFsEntryName;
+}
+export interface IBlobFolderContent extends IBlobContent<IBlobFolderChildContent> {}
 
+export interface IBlobFolderContentRaw extends IBlobContent<IBlobFolderChildContentRaw> {}
 export interface IBlobRootChildContent {
   name: string;
   type: string;
@@ -18,17 +23,16 @@ export interface IBlobRootChildContent {
   writeable: boolean;
 }
 
-export interface IBlobFolderContent {
-  name: string;
-  parent: string;
-  writeable: boolean;
-  children: IBlobFolderChildContent[];
-}
-
 export interface IBlobFolderChildContent {
   name: string;
   type: FsEntryType;
   path: string;
-  lastModified: string;
-  size: string;
+  lastModified: string; // this property is for backward compatibility
+  size: string; // this property is for backward compatibility
+}
+
+export interface IBlobFolderChildContentRaw {
+  name: string;
+  writeable: boolean;
+  created: Date;
 }

@@ -61,6 +61,11 @@ export async function initServices(botsFolder: string) {
     getLogger(),
     getProfier()
   );
+  // storageService = new TxStorageService(
+  //   originalStorageService,
+  //   getLogger(),
+  //   getProfier()
+  // );
   logger.logTrace('Telexy Services Initialized');
 }
 

@@ -1,5 +1,5 @@
 import { UserIdentity } from '@botframework-composer/types';
-import { IBlobRootContent } from '../common/iFileSystemContentInterfaces';
+import { IBlobFolderContentRaw, IBlobRootContent } from '../common/iFileSystemContentInterfaces';
 import { IFetch, ILogger, IProfiler } from '../common/interfaces';
 import { ITxClient } from '../common/iTxClient';
 import { ITxServerInfo } from '../common/iTxServerInfo';
@@ -52,7 +52,7 @@ export class TxClient implements ITxClient {
     });
   }
 
-  async getBots(): Promise<IBlobRootContent> {
+  async getBots(): Promise<IBlobFolderContentRaw> {
     try {
       const url = this._getBotsUrl();
       const init = this._getBotsRequestOptionsBuilder().buildRequestInit();

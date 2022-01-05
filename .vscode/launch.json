@@ -54,7 +54,7 @@
       "program": "${workspaceFolder}/Composer/packages/server/build/init.js",
       "env": {
         "DEBUG": "composer*",
-        "COMPOSER_BOTS_FOLDER" : "D:\\temp\\bots",
+        "COMPOSER_BOTS_FOLDER" : "D:\\temp\\txbots",
         "PORT": "5050"
       },
       "restart": true,
