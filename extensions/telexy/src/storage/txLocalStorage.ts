@@ -10,7 +10,7 @@ import archiver from 'archiver';
 import rimraf from 'rimraf';
 import { FileExtensions } from '@botframework-composer/types';
 
-import { IFileStorage, Stat, MakeDirectoryOptions } from '../common/interfaces';
+import { ITxFileStorage, Stat, MakeDirectoryOptions, IFileStorage } from '../common/interfaces';
 //import { IFileStorage, Stat, MakeDirectoryOptions } from '../../../../Composer/packages/server/src/models/storage/interface';
 
 const stat = promisify(fs.stat);
@@ -32,7 +32,8 @@ const rmrfDirSync = rimraf.sync;
 const copyFile = promisify(fs.copyFile);
 const rename = promisify(fs.rename);
 
-export class TelexyLocalStorage implements IFileStorage {
+/** implements IFileStorage from bfc on local disk */
+export class TxLocalStorage implements IFileStorage {
   async stat(path: string): Promise<Stat> {
     const fstat = await stat(path);
     // test to see if this file is writable
@@ -89,7 +90,8 @@ export class TelexyLocalStorage implements IFileStorage {
 
   async exists(path: string): Promise<boolean> {
     try {
-      await stat(path);
+      const st = await stat(path);
+      const _ = st.isDirectory || st.isFile;
       return true;
     } catch (error) {
       return false;

@@ -4,7 +4,10 @@ import { IFetch, ILogger, IProfiler } from '../common/interfaces';
 import { ITxClient } from '../common/iTxClient';
 import { ITxServerInfo } from '../common/iTxServerInfo';
 import { TxClientRequestOptionsBuilder } from './txClientRequestOptionsBuilder';
-
+import fs from 'fs/promises';
+import fssync from 'fs';
+import path from 'path';
+import os from 'os';
 export class TxClient implements ITxClient {
   private _sessionCookie: string = '';
   /**
@@ -78,12 +81,43 @@ export class TxClient implements ITxClient {
     }
   }
 
+  /** @inheritdoc */
+  async getBotContent(name: string): Promise<string> {
+    let tempDir: string | undefined;
+    let tempFile: string | undefined;
+    try {
+      const url = this._getBotContentUrl(name);
+      const init = this._getBotContentRequestOptionsBuilder().buildRequestInit();
+      const response = await this._http.fetch(url, init);
+      tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'TelexyBfc'));
+      const stat = await fs.stat(tempDir);
+      tempFile = path.join(tempDir, `${name}.zip`);
+      //const res = await response.blob();
+      //fssync.writeFile()
+      //res.arrayBuffer()
+      // if ()
+      //   await fs.writeFile(tempFile, res)
+      throw new Error('Method not implemented.');
+    } catch (err) {
+      if (tempDir) {
+        if (tempDir) {
+          await fs.rmdir(tempDir);
+        }
+      }
+      throw err;
+    }
+  }
+
   private _getBotsUrl(): RequestInfo {
-    return this._getTargetUrl('BotProviderBfcApi', 'getBots');
+    return this._getApiTargetUrl('BotProviderBfcApi', 'getBots');
+  }
+
+  private _getBotContentUrl(name: string): RequestInfo {
+    return this._getMvcTargetUrl('BotProviderBfc', 'getBotContent', { name: name });
   }
 
   private _checkBotUrl(name: string): RequestInfo {
-    return this._getTargetUrl('BotProviderBfcApi', 'checkBot', { name: name });
+    return this._getApiTargetUrl('BotProviderBfcApi', 'checkBot', { name: name });
   }
 
   private _getBotsRequestOptionsBuilder(): TxClientRequestOptionsBuilder {
@@ -93,6 +127,9 @@ export class TxClient implements ITxClient {
   private _checkBotRequestOptionsBuilder(): TxClientRequestOptionsBuilder {
     return new TxClientRequestOptionsBuilder(this._sessionCookie).withHeader_Accept_ApplicationJson();
   }
+  private _getBotContentRequestOptionsBuilder(): TxClientRequestOptionsBuilder {
+    return new TxClientRequestOptionsBuilder(this._sessionCookie).withHeader_Accept_ApplicationOctetStream();
+  }
 
   /**
    * Constructs string url from parameters
@@ -100,7 +137,7 @@ export class TxClient implements ITxClient {
    * @param action
    * @param query
    */
-  _getTargetUrl(controller: string, action: string, query?: { [key: string]: string }): string {
+  _getApiTargetUrl(controller: string, action: string, query?: { [key: string]: string }): string {
     let queryStr = '';
     if (query) {
       Object.keys(query).forEach((key: string) => {
@@ -112,9 +149,30 @@ export class TxClient implements ITxClient {
       });
       queryStr = `?${queryStr}`;
     }
-    //`${this._serverInfo.uri}/api/${controller}/${encodeURIComponent(action)}${queryStr}`;
-    //`${this._serverInfo.uri}(@${this._serverInfo.sessionId})/${controller}/${encodeURIComponent(action)}${queryStr}`;
     return `${this._serverInfo.uri}(@${this._serverInfo.sessionId})/api/${controller}/${encodeURIComponent(
+      action
+    )}${queryStr}`;
+  }
+
+  /**
+   * Constructs string url from parameters
+   * @param controller
+   * @param action
+   * @param query
+   */
+  _getMvcTargetUrl(controller: string, action: string, query?: { [key: string]: string }): string {
+    let queryStr = '';
+    if (query) {
+      Object.keys(query).forEach((key: string) => {
+        if (queryStr) {
+          queryStr = `${queryStr}&${encodeURIComponent(key)}=${encodeURIComponent(query[key])}`;
+        } else {
+          queryStr = `${encodeURIComponent(key)}=${encodeURIComponent(query[key])}`;
+        }
+      });
+      queryStr = `?${queryStr}`;
+    }
+    return `${this._serverInfo.uri}(@${this._serverInfo.sessionId})/${controller}/${encodeURIComponent(
       action
     )}${queryStr}`;
   }

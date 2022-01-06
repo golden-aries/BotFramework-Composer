@@ -1,27 +1,27 @@
 import { UserIdentity } from '@botframework-composer/types';
-import { IFileStorage, StorageConnection } from '../../../../Composer/packages/server/build/models/storage/interface';
+import { StorageConnection } from '../../../../Composer/packages/server/build/models/storage/interface';
 import { IBlobRootContent, IBlobFolderContent, IBlobFolderChildContent } from '../common/iFileSystemContentInterfaces';
-import { ILogger, IPathConvertor, IProfiler } from '../common/interfaces';
+import { ILogger, IFileStorage, IProfiler } from '../common/interfaces';
 import { IStorageService } from '../common/iStorageService';
 
 /**
  * Takes over original storage service by replacing it's function properties
  */
 export class TxStorageServiceProxy implements IStorageService {
-  private _getStorageClient: (storageId: string, user?: UserIdentity) => IFileStorage;
-  private _createStorageConnection: (connection: StorageConnection) => void;
-  private _getStorageConnections: () => StorageConnection[];
+  protected _getStorageClient: (storageId: string, user?: UserIdentity) => IFileStorage;
+  protected _createStorageConnection: (connection: StorageConnection) => void;
+  protected _getStorageConnections: () => StorageConnection[];
   protected _checkBlob: (storageId: string, filePath: string, user?: UserIdentity) => Promise<boolean>;
-  private _getBlobDateModified: (storageId: string, filePath: string, user?: UserIdentity) => Promise<string>;
+  protected _getBlobDateModified: (storageId: string, filePath: string, user?: UserIdentity) => Promise<string>;
   protected _getBlob: (
     storageId: string,
     filePath: string,
     user?: UserIdentity
   ) => Promise<IBlobRootContent | IBlobFolderContent>;
-  private _updateCurrentPath: (path: string, storageId: string) => StorageConnection[];
-  private _validatePath: (path: string) => '' | 'The path does not exist' | 'This is not a directory';
-  private _createFolder: (path: string) => void;
-  private _updateFolder: (path: string, oldName: string, newName: string) => void;
+  protected _updateCurrentPath: (path: string, storageId: string) => StorageConnection[];
+  protected _validatePath: (path: string) => '' | 'The path does not exist' | 'This is not a directory';
+  protected _createFolder: (path: string) => void;
+  protected _updateFolder: (path: string, oldName: string, newName: string) => void;
   protected _checkIsBotFolder: (storageId: string, path: string, user?: UserIdentity | undefined) => Promise<boolean>;
   //private _getChildren: (storage: IFileStorage, dirPath: string) => Promise<IBlobFolderChildContent[]>;
 

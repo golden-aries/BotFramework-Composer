@@ -1,5 +1,14 @@
 import path from 'path';
-import { IFetch, ILogger, IPathConvertor, IProfiler, ISettings, LogLevel } from './common/interfaces';
+import {
+  IFetch,
+  IFileStorage,
+  ILogger,
+  IPathConvertor,
+  IProfiler,
+  ISettings,
+  ITxFileStorage,
+  LogLevel,
+} from './common/interfaces';
 import { IConfiguration } from './configuration/abstractions';
 import { JsonConfiguration } from './configuration/jsonConfiguration';
 import { TxFsClientSync } from './txClient/txFsClientSync';
@@ -28,6 +37,9 @@ import { ITxClient } from './common/iTxClient';
 import { TxClient } from './txClient/txClient';
 import { TxFetch } from './txClient/txFetch';
 import { TxStorageService } from './services/txStorageService';
+import { TxPath } from './common/txPath';
+import { TxProjectService } from './services/txProjectService';
+import { TxLocalStorage } from './storage/txLocalStorage';
 
 let settings: ISettings;
 let logger: ILogger;
@@ -40,26 +52,48 @@ let publisher: PublishPlugin<PublishConfig>;
 let storageService: IStorageService;
 let serverInfo: ITxServerInfo;
 let txClient: ITxClient;
+let txPath: TxPath;
+let cache: IFileStorage;
 
 /**
  * @param botsFolder - botsFolder as configured in Composer
  */
 export async function initServices(botsFolder: string) {
   settings = await initSettings(botsFolder);
+  txPath = new TxPath();
+  cache = new TxLocalStorage();
   pathConvertor = new PathConvertor(getSettings().botsFolder);
   logger = new ConsoleLogger(getSettings());
   cachedFetch = new TxFetch({ fetch: fetch }, getLogger());
   profiler = new Profiler(getSettings(), getLogger());
   initTelexyFsClientSync();
-  botProjectService = new TxProjectServiceProxy(getLogger(), getProfier());
   serverInfo = await initTxServerInfo(getSettings());
   txClient = new TxClient(serverInfo, getFetch(), getLogger(), getProfier());
-  storageService = new TxStorageService(getTxClient(), botsFolder, originalStorageService, getLogger(), getProfier());
-  // storageService = new TxStorageService(
+
+  botProjectService = new TxProjectService(
+    getTxClient(),
+    getTxPath(),
+    getSettings().botsFolder,
+    getCache(),
+    getLogger(),
+    getProfier()
+  );
+  //botProjectService = new TxProjectServiceProxy(getLogger(), getProfier());
+
+  storageService = new TxStorageService(
+    getTxClient(),
+    botsFolder,
+    getTxPath(),
+    originalStorageService,
+    getLogger(),
+    getProfier()
+  );
+  // storageService = new TxStorageServiceProxy(
   //   originalStorageService,
   //   getLogger(),
   //   getProfier()
   // );
+
   logger.logTrace('Telexy Services Initialized');
 }
 
@@ -175,4 +209,17 @@ function getPathConvertor(): IPathConvertor {
     return pathConvertor;
   }
   throw new Error('Telexy path convertor has not been initialized!');
+}
+function getTxPath(): TxPath {
+  if (txPath) {
+    return txPath;
+  }
+  throw new Error('Telexy txPath class has not been initialized!');
+}
+
+function getCache(): IFileStorage {
+  if (cache) {
+    return cache;
+  }
+  throw new Error('Telexy cache storags has not been initialized!');
 }

@@ -1,9 +1,7 @@
-import {
-  IFileStorage,
-  StorageConnection as IStorageConnection,
-} from '../../../../Composer/packages/server/build/models/storage/interface';
+import { StorageConnection as IStorageConnection } from '../../../../Composer/packages/server/build/models/storage/interface';
 import { UserIdentity } from '@botframework-composer/types';
 import { IBlobFolderChildContent, IBlobFolderContent, IBlobRootContent } from './iFileSystemContentInterfaces';
+import { IFileStorage } from './interfaces';
 
 /** ITelexyStorage */
 export interface IStorageService {

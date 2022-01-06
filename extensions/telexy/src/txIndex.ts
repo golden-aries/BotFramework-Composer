@@ -1,6 +1,7 @@
 import { IExtensionRegistration } from '@botframework-composer/types';
 import path from 'path';
 import initRuntimes from './runtimes/txRuntimes';
+import { TxLocalStorage } from './storage/txLocalStorage';
 import { getPublisher, getTxClient, initServices } from './txServiceProvider';
 
 async function initialize(registration: IExtensionRegistration): Promise<void> {
@@ -8,7 +9,7 @@ async function initialize(registration: IExtensionRegistration): Promise<void> {
   const settings = require(relativePath);
   await initServices(settings.default.botsFolder);
   //settings.default.platform = 'linux';
-  //registration.useStorage(TxStorageWrapper);
+  registration.useStorage(TxLocalStorage);
   const publisher = getPublisher(registration);
   // register this publishing method with Composer
   await registration.addPublishMethod(publisher);

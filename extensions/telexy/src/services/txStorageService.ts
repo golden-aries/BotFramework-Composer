@@ -6,19 +6,19 @@ import { IStorageService } from '../common/iStorageService';
 import { ITxClient } from '../common/iTxClient';
 import { TxPath } from '../common/txPath';
 import { TxStorageServiceProxy } from './txStorageServiceProxy';
+import { IFileStorage } from '../common/interfaces';
 
 /**
  * Overrides TxStorageServiceProxy by redirecting some calls to TxClient
  */
 export class TxStorageService extends TxStorageServiceProxy {
-  private _txPath: TxPath;
-
   /**
    *
    */
   constructor(
     private _txClient: ITxClient,
     private _botsFolder: string,
+    private _txPath: TxPath,
     originalService: IStorageService,
     logger: ILogger,
     profiler: IProfiler
@@ -27,8 +27,11 @@ export class TxStorageService extends TxStorageServiceProxy {
     originalService.checkBlob = this.checkBlob;
     originalService.getBlob = this.getBlob;
     originalService.checkIsBotFolder = this.checkIsBotFolder;
-    this._txPath = new TxPath();
   }
+
+  getStorageClient: (storageId: string, user?: UserIdentity) => IFileStorage = (storageId, user) => {
+    return this._getStorageClient(storageId, user);
+  };
 
   checkBlob: (storageId: string, filePath: string, user?: UserIdentity | undefined) => Promise<boolean> = async (
     storageId,
