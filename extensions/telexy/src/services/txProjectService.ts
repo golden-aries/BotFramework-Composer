@@ -3,11 +3,13 @@ import fs from 'fs/promises';
 import path from 'path';
 import { LocationRef } from '../../../../Composer/packages/server/build/models/bot/interface';
 import { BotProjectService } from '../../../../Composer/packages/server/build/services/project';
-import { IFileStorage, ILogger, IProfiler, ITxFileStorage } from '../common/interfaces';
+import { IFileStorage } from '../common/iFileStorage';
+import { ILogger, IProfiler } from '../common/interfaces';
 import { ITxClient } from '../common/iTxClient';
 import { TxPath } from '../common/txPath';
 import { TxProjectServiceProxy } from './txProjectServiceProxy';
-
+import unzip from 'extract-zip';
+import os from 'os';
 export class TxProjectService extends TxProjectServiceProxy {
   /**
    *
@@ -38,13 +40,17 @@ export class TxProjectService extends TxProjectServiceProxy {
         if (!(await this._cache.exists(locationRef.path))) {
           try {
             tempZipFile = await this._txClient.getBotContent(path.basename(locationRef.path));
-            throw new Error('Not Implemented yet');
+            await unzip(tempZipFile, { dir: locationRef.path });
           } catch (err) {
             throw err;
           } finally {
             if (tempZipFile) {
               try {
-                await fs.rmdir(path.dirname(tempZipFile));
+                const dir = path.dirname(tempZipFile);
+                // that guard is a safety precaution
+                if (this._txPath.isChildOf(dir, os.tmpdir())) {
+                  await fs.rmdir(dir, { recursive: true });
+                }
               } catch (err) {
                 this.logger.logError('unable to delete temporary directory', err);
               }

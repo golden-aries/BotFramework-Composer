@@ -1,9 +1,9 @@
 import { UserIdentity } from '@botframework-composer/types';
 import { StorageConnection } from '../../../../Composer/packages/server/build/models/storage/interface';
 import { IBlobRootContent, IBlobFolderContent, IBlobFolderChildContent } from '../common/iFileSystemContentInterfaces';
-import { ILogger, IFileStorage, IProfiler } from '../common/interfaces';
+import { ILogger, IProfiler } from '../common/interfaces';
 import { IStorageService } from '../common/iStorageService';
-
+import { IFileStorage } from '../common/iFileStorage';
 /**
  * Takes over original storage service by replacing it's function properties
  */

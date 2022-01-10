@@ -1,12 +1,4 @@
-import {
-  IFileStorage,
-  ILogger,
-  IPathConvertor,
-  IProfiler,
-  ISettings,
-  MakeDirectoryOptions,
-  Stat,
-} from '../common/interfaces';
+import { ILogger, IPathConvertor, IProfiler, ISettings, MakeDirectoryOptions, Stat } from '../common/interfaces';
 import {
   TxFileSystemOperationError,
   PathIsNotADirectoryException,
@@ -20,6 +12,7 @@ import {
 //import { IFileStorage, Stat, MakeDirectoryOptions } from '../../../../Composer/packages/server/src/models/storage/interface';
 import { CMFusionFSItemWrapper, FileStat, GlobParametersWrapper } from '../txClient/txFsTypes';
 import { TxFsClient } from '../txClient/txFsClient';
+import { IFileStorage } from '../common/iFileStorage';
 
 export class TxStorage implements IFileStorage {
   /**

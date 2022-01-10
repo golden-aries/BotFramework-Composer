@@ -3,7 +3,7 @@ import { IFileStorage } from '../models/storage/interface';
 import { Path } from '../utility/path';
 //import * as process from "process"
 
-export class StorageHelper {
+export class TxStorageHelper {
   /**
    *
    */

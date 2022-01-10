@@ -1,12 +1,12 @@
 import { UserIdentity } from '@botframework-composer/types';
 import path from 'path';
+import { IFileStorage } from '../common/iFileStorage';
 import { IBlobFolderChildContent, IBlobFolderContent, IBlobRootContent } from '../common/iFileSystemContentInterfaces';
 import { ILogger, IProfiler } from '../common/interfaces';
 import { IStorageService } from '../common/iStorageService';
 import { ITxClient } from '../common/iTxClient';
 import { TxPath } from '../common/txPath';
 import { TxStorageServiceProxy } from './txStorageServiceProxy';
-import { IFileStorage } from '../common/interfaces';
 
 /**
  * Overrides TxStorageServiceProxy by redirecting some calls to TxClient

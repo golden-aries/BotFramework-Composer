@@ -85,19 +85,16 @@ export class TxClient implements ITxClient {
   async getBotContent(name: string): Promise<string> {
     let tempDir: string | undefined;
     let tempFile: string | undefined;
+
     try {
       const url = this._getBotContentUrl(name);
       const init = this._getBotContentRequestOptionsBuilder().buildRequestInit();
       const response = await this._http.fetch(url, init);
       tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'TelexyBfc'));
-      const stat = await fs.stat(tempDir);
       tempFile = path.join(tempDir, `${name}.zip`);
-      //const res = await response.blob();
-      //fssync.writeFile()
-      //res.arrayBuffer()
-      // if ()
-      //   await fs.writeFile(tempFile, res)
-      throw new Error('Method not implemented.');
+      const buf = await response.arrayBuffer();
+      await fs.writeFile(tempFile, new Uint8Array(buf));
+      return tempFile;
     } catch (err) {
       if (tempDir) {
         if (tempDir) {

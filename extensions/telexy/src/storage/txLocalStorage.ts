@@ -10,7 +10,8 @@ import archiver from 'archiver';
 import rimraf from 'rimraf';
 import { FileExtensions } from '@botframework-composer/types';
 
-import { ITxFileStorage, Stat, MakeDirectoryOptions, IFileStorage } from '../common/interfaces';
+import { Stat, MakeDirectoryOptions } from '../common/interfaces';
+import { IFileStorage } from '../common/iFileStorage';
 //import { IFileStorage, Stat, MakeDirectoryOptions } from '../../../../Composer/packages/server/src/models/storage/interface';
 
 const stat = promisify(fs.stat);

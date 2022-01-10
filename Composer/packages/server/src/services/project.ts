@@ -28,7 +28,7 @@ import StorageService from './storage';
 import { Path } from './../utility/path';
 import { BackgroundProcessManager } from './backgroundProcessManager';
 import { TelemetryService } from './telemetry';
-//import { StorageHelper } from './storageHelper';
+//import { TxStorageHelper } from './txStorageHelper';
 const execAsync = promisify(exec);
 
 const MAX_RECENT_BOTS = 7;
