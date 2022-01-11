@@ -8,7 +8,8 @@
 // ReSharper disable InconsistentNaming
 
 import _ from 'lodash';
-import { IFetch, ILogger, ISettings } from '../common/interfaces';
+import { IFetch } from '../common/iFetch';
+import { ILogger, ISettings } from '../common/interfaces';
 import { ApiException, ResultIsNotABooleanValueException } from '../exceptions/txExceptions';
 import { RequestOptionsBuilder } from './requestOptionsBuilder';
 

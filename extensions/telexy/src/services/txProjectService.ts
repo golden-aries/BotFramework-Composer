@@ -1,5 +1,6 @@
 import { UserIdentity } from '@botframework-composer/types';
 import fs from 'fs/promises';
+import fsExtra from 'fs-extra';
 import path from 'path';
 import { LocationRef } from '../../../../Composer/packages/server/build/models/bot/interface';
 import { BotProjectService } from '../../../../Composer/packages/server/build/services/project';
@@ -40,7 +41,16 @@ export class TxProjectService extends TxProjectServiceProxy {
         if (!(await this._cache.exists(locationRef.path))) {
           try {
             tempZipFile = await this._txClient.getBotContent(path.basename(locationRef.path));
-            await unzip(tempZipFile, { dir: locationRef.path });
+            //await unzip(tempZipFile, { dir: locationRef.path });
+            const dir = path.join(path.dirname(tempZipFile), 'unzipped');
+            await unzip(tempZipFile, { dir: dir });
+            const all = await fs.readdir(dir, { withFileTypes: true });
+            const allFolders = all.filter((dirent) => dirent.isDirectory()).map((dirent) => dirent.name);
+            if (!(allFolders.length > 0)) {
+              throw new Error('Solution folder expected!');
+            }
+            const dest = path.join(dir, allFolders[0]);
+            await fsExtra.move(dest, locationRef.path);
           } catch (err) {
             throw err;
           } finally {

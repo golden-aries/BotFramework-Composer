@@ -1,4 +1,5 @@
-import { IFetch, ILogger } from '../common/interfaces';
+import { IFetch } from '../common/iFetch';
+import { ILogger } from '../common/interfaces';
 
 /**
  * Wraps WHATWG Fetch API

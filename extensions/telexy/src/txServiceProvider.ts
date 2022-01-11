@@ -1,5 +1,5 @@
 import path from 'path';
-import { IFetch, ILogger, IPathConvertor, IProfiler, ISettings, LogLevel } from './common/interfaces';
+import { ILogger, IPathConvertor, IProfiler, ISettings, LogLevel } from './common/interfaces';
 import { IConfiguration } from './configuration/abstractions';
 import { JsonConfiguration } from './configuration/jsonConfiguration';
 import { TxFsClientSync } from './txClient/txFsClientSync';
@@ -32,6 +32,7 @@ import { TxPath } from './common/txPath';
 import { TxProjectService } from './services/txProjectService';
 import { TxLocalStorage } from './storage/txLocalStorage';
 import { IFileStorage } from './common/iFileStorage';
+import { IFetch } from './common/iFetch';
 
 let settings: ISettings;
 let logger: ILogger;

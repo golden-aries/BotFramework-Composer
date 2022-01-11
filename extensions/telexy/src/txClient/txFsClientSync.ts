@@ -2,10 +2,10 @@ import { IncomingHttpHeaders } from 'http';
 import syncRequest, { Options, Response } from 'sync-request';
 import { ILogger, ISettings } from '../common/interfaces';
 import { ApiException, ResultIsNotABooleanValueException, TxExistsOperationError } from '../exceptions/txExceptions';
-import { IFetch } from '../common/interfaces';
 import { CMFusionFSItemWrapper, FileStat, IGlobParametersWrapper } from './txFsTypes';
 import { TxFsClient } from './txFsClient';
 import _ from 'lodash';
+import { IFetch } from '../common/iFetch';
 
 export class TxFsClientSync extends TxFsClient {
   /**

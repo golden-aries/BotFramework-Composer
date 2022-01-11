@@ -1,6 +1,6 @@
 import { UserIdentity } from '@botframework-composer/types';
 import { IBlobFolderContentRaw, IBlobRootContent } from '../common/iFileSystemContentInterfaces';
-import { IFetch, ILogger, IProfiler } from '../common/interfaces';
+import { ILogger, IProfiler } from '../common/interfaces';
 import { ITxClient } from '../common/iTxClient';
 import { ITxServerInfo } from '../common/iTxServerInfo';
 import { TxClientRequestOptionsBuilder } from './txClientRequestOptionsBuilder';
@@ -8,6 +8,7 @@ import fs from 'fs/promises';
 import fssync from 'fs';
 import path from 'path';
 import os from 'os';
+import { IFetch } from '../common/iFetch';
 export class TxClient implements ITxClient {
   private _sessionCookie: string = '';
   /**

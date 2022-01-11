@@ -35,10 +35,6 @@ export function isTelexyBotComposerExtensionSettings(obj: any): obj is ISettings
   return obj && 'cloudUrl' in obj && 'apiKey' in obj && 'logTrace' in obj;
 }
 
-export interface IFetch {
-  fetch(url: RequestInfo, init?: RequestInit): Promise<Response>;
-}
-
 export interface Stat {
   isDir: boolean;
   isFile: boolean;
