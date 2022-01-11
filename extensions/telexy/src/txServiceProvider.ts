@@ -33,6 +33,8 @@ import { TxProjectService } from './services/txProjectService';
 import { TxLocalStorage } from './storage/txLocalStorage';
 import { IFileStorage } from './common/iFileStorage';
 import { IFetch } from './common/iFetch';
+import { INodeFetch } from './common/iNodeFetch';
+import { TxNodeFetch } from './txClient/txNodeFetch';
 
 let settings: ISettings;
 let logger: ILogger;
@@ -47,6 +49,7 @@ let serverInfo: ITxServerInfo;
 let txClient: ITxClient;
 let txPath: TxPath;
 let cache: IFileStorage;
+let nodeFetch: INodeFetch;
 
 /**
  * @param botsFolder - botsFolder as configured in Composer
@@ -58,10 +61,11 @@ export async function initServices(botsFolder: string) {
   pathConvertor = new PathConvertor(getSettings().botsFolder);
   logger = new ConsoleLogger(getSettings());
   cachedFetch = new TxFetch({ fetch: fetch }, getLogger());
+  nodeFetch = new TxNodeFetch();
   profiler = new Profiler(getSettings(), getLogger());
   initTelexyFsClientSync();
   serverInfo = await initTxServerInfo(getSettings());
-  txClient = new TxClient(serverInfo, getFetch(), getLogger(), getProfier());
+  txClient = new TxClient(serverInfo, getFetch(), getNodeFetch(), getLogger(), getProfier());
 
   botProjectService = new TxProjectService(
     getTxClient(),
@@ -128,6 +132,13 @@ function getFetch(): IFetch {
     throw new Error('Fetch is not initialized');
   }
   return cachedFetch;
+}
+
+function getNodeFetch(): INodeFetch {
+  if (!nodeFetch) {
+    throw new Error('Fetch is not initialized');
+  }
+  return nodeFetch;
 }
 
 function getLogger(): ILogger {

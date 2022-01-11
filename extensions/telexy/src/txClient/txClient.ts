@@ -9,6 +9,7 @@ import fssync from 'fs';
 import path from 'path';
 import os from 'os';
 import { IFetch } from '../common/iFetch';
+import { INodeFetch } from '../common/iNodeFetch';
 export class TxClient implements ITxClient {
   private _sessionCookie: string = '';
   /**
@@ -17,6 +18,7 @@ export class TxClient implements ITxClient {
   constructor(
     private _serverInfo: ITxServerInfo,
     private _http: IFetch,
+    private _nodeFetch: INodeFetch,
     private _logger: ILogger,
     private _profiler: IProfiler
   ) {
