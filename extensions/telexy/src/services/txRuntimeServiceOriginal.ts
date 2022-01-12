@@ -14,7 +14,7 @@ const removeDirAndFiles = promisify(rimraf);
 const execAsync = promisify(exec);
 
 /** @inheritdoc */
-export class TxOriginalRuntimeService implements IRuntime {
+export class TxRuntimeServiceOriginal implements IRuntime {
   key = 'adaptive-runtime-dotnet-webapp';
   name = 'C# - Web App';
 
@@ -170,6 +170,6 @@ export class TxOriginalRuntimeService implements IRuntime {
   startCommand = '';
 
   toString(): string {
-    return 'TxOriginalRuntimeService';
+    return 'TxRuntimeServiceOriginal';
   }
 }

@@ -36,7 +36,7 @@ import { IFetch } from './common/iFetch';
 import { INodeFetch } from './common/iNodeFetch';
 import { TxNodeFetch } from './txClient/txNodeFetch';
 import { IRuntime } from './common/iRuntime';
-import { TxOriginalRuntimeService } from './services/txOriginalRuntimeService';
+import { TxRuntimeServiceOriginal } from './services/txRuntimeServiceOriginal';
 import { TxRuntimeService } from './services/txRuntimeService';
 
 let settings: ISettings;
