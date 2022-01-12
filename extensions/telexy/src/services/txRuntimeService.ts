@@ -18,7 +18,7 @@ export class TxRuntimeService implements IRuntime {
   /** @inheritdoc */
   build = async (runtimePath: string, project: IBotProject) => {
     this._logger.logTrace('%s %s', this, this._buildName);
-    throw new Error('Not impelmented yet!');
+    throw new Error(`Not impelmented yet! ${this} ${this._buildName}`);
   };
 
   private _installComponentName: string = 'installComponent';
@@ -32,21 +32,21 @@ export class TxRuntimeService implements IRuntime {
     isPreview = false
   ): Promise<string> => {
     this._logger.logTrace('%s %s', this, this._installComponentName);
-    throw new Error('Not impelmented yet!');
+    throw new Error(`Not impelmented yet! ${this} ${this._installComponentName}`);
   };
 
   private _uninstallComponent: string = 'uninstallComponent';
   /** @inheritdoc */
   uninstallComponent = async (runtimePath: string, packageName: string, project: IBotProject): Promise<string> => {
     this._logger.logTrace('%s %s', this, this._uninstallComponent);
-    throw new Error('Not impelmented yet!');
+    throw new Error(`Not impelmented yet! ${this} ${this._uninstallComponent}`);
   };
 
   private _identifyManifest: string = 'identifyManifest';
   /** @inheritdoc */
   identifyManifest = (runtimePath: string, projName?: string): string => {
     this._logger.logTrace('%s %s', this, this._identifyManifest);
-    throw new Error('Not impelmented yet!');
+    throw new Error(`Not impelmented yet! ${this} ${this._identifyManifest}`);
   };
 
   private _runName: string = 'run';
@@ -56,7 +56,7 @@ export class TxRuntimeService implements IRuntime {
     localDisk: BfcFileStorage
   ) => {
     this._logger.logTrace('%s %s', this, this._runName);
-    throw new Error('Not impelmented yet!');
+    throw new Error(`Not impelmented yet! ${this} ${this._runName}`);
   };
 
   private _buildDeployName: string = 'buildDeploy';
@@ -68,7 +68,7 @@ export class TxRuntimeService implements IRuntime {
     profileName: string
   ): Promise<string> => {
     this._logger.logTrace('%s %s', this, this._buildDeployName);
-    throw new Error('Not impelmented yet!');
+    throw new Error(`Not impelmented yet! ${this} ${this._buildDeployName}`);
   };
 
   private _setSkillManifestName: string = 'setSkillManifest';
@@ -81,7 +81,7 @@ export class TxRuntimeService implements IRuntime {
     mode = 'azurewebapp' // set default as azurewebapp
   ) => {
     this._logger.logTrace('%s %s', this, this._setSkillManifestName);
-    throw new Error('Not impelmented yet!');
+    throw new Error(`Not impelmented yet! ${this} ${this._setSkillManifestName}`);
   };
 
   path = '';

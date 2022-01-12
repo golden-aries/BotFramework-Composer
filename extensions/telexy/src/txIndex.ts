@@ -10,9 +10,8 @@ async function initialize(registration: IExtensionRegistration): Promise<void> {
   await initServices(settings.default.botsFolder);
   //settings.default.platform = 'linux';
   registration.useStorage(TxLocalStorage);
-  const publisher = getPublisher(registration);
   // register this publishing method with Composer
-  await registration.addPublishMethod(publisher);
+  await registration.addPublishMethod(getPublisher(registration));
   //await initRuntimes(registration);
   registration.addRuntimeTemplate(getRuntime());
 }
