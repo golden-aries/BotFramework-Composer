@@ -13,7 +13,7 @@ interface WebSocket {
   send(data: string, cb?: (err?: Error) => void): void;
 }
 
-export class RuntimeLogServer {
+export class RuntimeLogServerOriginal {
   private static restServer: http.Server;
   private static servers: WSServer[] = [];
   private static sockets: Record<string, WebSocket> = {};

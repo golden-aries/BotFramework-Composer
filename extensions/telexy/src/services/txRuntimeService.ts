@@ -1,20 +1,14 @@
-import { DialogSetting, IBotProject, IExtensionRegistration } from '@botframework-composer/types';
-import { IRuntime } from '../common/iRuntime';
-import { promisify } from 'util';
+import { DialogSetting, IBotProject } from '@botframework-composer/types';
 import { exec } from 'child_process';
-import path from 'path';
+import rimraf from 'rimraf';
+import { promisify } from 'util';
+import { ILogger } from '../common/interfaces';
+import { IRuntime } from '../common/iRuntime';
 // import { IFileStorage } from "../common/iFileStorage";
 import { BfcFileStorage } from '../runtimes/interface';
-import fs from 'fs-extra';
-import rimraf from 'rimraf';
-import { copyDir } from '../runtimes/copyDir';
-import { ILogger } from '../common/interfaces';
-const removeDirAndFiles = promisify(rimraf);
-
-const execAsync = promisify(exec);
 
 /** @inheritdoc */
-export class TxOriginalRuntimeService implements IRuntime {
+export class TxRuntimeService implements IRuntime {
   key = 'adaptive-runtime-dotnet-webapp';
   name = 'C# - Web App';
 

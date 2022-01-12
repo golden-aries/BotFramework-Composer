@@ -170,6 +170,6 @@ export class TxOriginalRuntimeService implements IRuntime {
   startCommand = '';
 
   toString(): string {
-    return 'TxRuntimeService';
+    return 'TxOriginalRuntimeService';
   }
 }

@@ -19,7 +19,7 @@ import {
   IBotProject,
   UserIdentity,
 } from '@botframework-composer/types';
-import { PublishConfig, TelexyPublisher } from './publish/txPublish';
+import { PublishConfig, TxPublishLocalOriginal } from './publish/txPublishLocalOriginal';
 import originalStorageService from '../../../Composer/packages/server/build/services/storage';
 import { IStorageService } from './common/iStorageService';
 import { TxStorageServiceProxy } from './services/txStorageServiceProxy';
@@ -37,6 +37,7 @@ import { INodeFetch } from './common/iNodeFetch';
 import { TxNodeFetch } from './txClient/txNodeFetch';
 import { IRuntime } from './common/iRuntime';
 import { TxOriginalRuntimeService } from './services/txOriginalRuntimeService';
+import { TxRuntimeService } from './services/txRuntimeService';
 
 let settings: ISettings;
 let logger: ILogger;
@@ -69,7 +70,8 @@ export async function initServices(botsFolder: string) {
   initTelexyFsClientSync();
   serverInfo = await initTxServerInfo(getSettings());
   txClient = new TxClient(serverInfo, getFetch(), getNodeFetch(), getLogger(), getProfier());
-  runtime = new TxOriginalRuntimeService(getLogger());
+  //runtime = new TxOriginalRuntimeService(getLogger());
+  runtime = new TxRuntimeService(getLogger());
 
   botProjectService = new TxProjectService(
     getTxClient(),
@@ -178,7 +180,7 @@ export function getBotProjectService(): IBotProjectService {
 }
 
 export function getPublisher(registration: IExtensionRegistration): PublishPlugin<PublishConfig> {
-  return (publisher = publisher ?? new TelexyPublisher(registration, logger, profiler));
+  return (publisher = publisher ?? new TxPublishLocalOriginal(registration, logger, profiler));
 }
 
 async function initTxServerInfo(settings: ISettings): Promise<ITxServerInfo> {
