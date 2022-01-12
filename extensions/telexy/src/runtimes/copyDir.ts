@@ -4,13 +4,13 @@
 
 import Path from 'path';
 
-import { IFileStorage } from './interface';
+import { BfcFileStorage } from './interface';
 
 export async function copyDir(
   srcDir: string,
-  srcStorage: IFileStorage,
+  srcStorage: BfcFileStorage,
   dstDir: string,
-  dstStorage: IFileStorage,
+  dstStorage: BfcFileStorage,
   pathsToExclude?: Set<string>
 ) {
   if (!(await srcStorage.exists(srcDir)) || !(await srcStorage.stat(srcDir)).isDir) {

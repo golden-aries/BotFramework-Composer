@@ -35,6 +35,8 @@ import { IFileStorage } from './common/iFileStorage';
 import { IFetch } from './common/iFetch';
 import { INodeFetch } from './common/iNodeFetch';
 import { TxNodeFetch } from './txClient/txNodeFetch';
+import { IRuntime } from './common/iRuntime';
+import { TxOriginalRuntimeService } from './services/txOriginalRuntimeService';
 
 let settings: ISettings;
 let logger: ILogger;
@@ -50,6 +52,7 @@ let txClient: ITxClient;
 let txPath: TxPath;
 let cache: IFileStorage;
 let nodeFetch: INodeFetch;
+let runtime: IRuntime;
 
 /**
  * @param botsFolder - botsFolder as configured in Composer
@@ -66,6 +69,7 @@ export async function initServices(botsFolder: string) {
   initTelexyFsClientSync();
   serverInfo = await initTxServerInfo(getSettings());
   txClient = new TxClient(serverInfo, getFetch(), getNodeFetch(), getLogger(), getProfier());
+  runtime = new TxOriginalRuntimeService(getLogger());
 
   botProjectService = new TxProjectService(
     getTxClient(),
@@ -225,5 +229,12 @@ function getCache(): IFileStorage {
   if (cache) {
     return cache;
   }
-  throw new Error('Telexy cache storags has not been initialized!');
+  throw new Error('Telexy cache storage has not been initialized!');
+}
+
+export function getRuntime(): IRuntime {
+  if (runtime) {
+    return runtime;
+  }
+  throw new Error('Telexy runtime has not been initialized!');
 }

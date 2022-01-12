@@ -12,7 +12,7 @@ export interface MakeDirectoryOptions {
   recursive?: boolean;
 }
 
-export interface IFileStorage {
+export type BfcFileStorage = {
   stat(path: string): Promise<Stat>;
   readFile(path: string): Promise<string>;
   readDir(path: string): Promise<string[]>;
@@ -24,4 +24,4 @@ export interface IFileStorage {
   glob(pattern: string, path: string): Promise<string[]>;
   copyFile(src: string, dest: string): Promise<void>;
   rename(oldPath: string, newPath: string): Promise<void>;
-}
+};
