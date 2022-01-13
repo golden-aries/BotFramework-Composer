@@ -1,9 +1,12 @@
 import { DialogSetting, IBotProject } from '@botframework-composer/types';
 import { exec } from 'child_process';
+import { promises } from 'dns';
 import rimraf from 'rimraf';
 import { promisify } from 'util';
 import { ILogger } from '../common/interfaces';
 import { IRuntime } from '../common/iRuntime';
+import { ITxClient } from '../common/iTxClient';
+import { TxPath } from '../common/txPath';
 // import { IFileStorage } from "../common/iFileStorage";
 import { BfcFileStorage } from '../runtimes/interface';
 
@@ -12,13 +15,33 @@ export class TxRuntimeService implements IRuntime {
   key = 'adaptive-runtime-dotnet-webapp';
   name = 'C# - Web App';
 
-  constructor(private _logger: ILogger) {}
+  constructor(
+    private _botsFolder: string,
+    private _txClient: ITxClient,
+    private _txPath: TxPath,
+    private _originalRuntime: IRuntime | undefined,
+    private _logger: ILogger
+  ) {}
 
   private _buildName: string = 'build';
   /** @inheritdoc */
   build = async (runtimePath: string, project: IBotProject) => {
-    this._logger.logTrace('%s %s', this, this._buildName);
-    throw new Error(`Not impelmented yet! ${this} ${this._buildName}`);
+    this._logger.logTrace(
+      '%s %s runtimePath: %s project %s %s',
+      this,
+      this._buildName,
+      runtimePath,
+      project.id,
+      project.name
+    );
+    if (this._txPath.isChildOf(runtimePath, this._botsFolder)) {
+      await this._txClient.setBotContent(project.name, runtimePath);
+      throw new Error(`Not impelmented yet! ${this} ${this._buildName}`);
+    } else if (this._originalRuntime) {
+      await this._originalRuntime.build(runtimePath, project);
+    } else {
+      throw new Error(`Not impelmented for locations outside of a botFolder yet! ${this} ${this._buildName}`);
+    }
   };
 
   private _installComponentName: string = 'installComponent';

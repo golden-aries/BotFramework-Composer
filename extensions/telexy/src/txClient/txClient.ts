@@ -10,6 +10,7 @@ import path from 'path';
 import os from 'os';
 import { IFetch } from '../common/iFetch';
 import { INodeFetch } from '../common/iNodeFetch';
+import archiver from 'archiver';
 export class TxClient implements ITxClient {
   private _sessionCookie: string = '';
   /**
@@ -35,6 +36,44 @@ export class TxClient implements ITxClient {
       throw new Error('Constructor argument "profiler" is falsy');
     }
     this._initSessionCookie();
+  }
+
+  /**
+   * builds and returns a url for a setBotContent
+   * @param name bot's name
+   * */
+  private _setBotContentUrl(name: string): string {
+    return this._getApiTargetUrl('BotProviderBfcApi', 'setBotContent', { name: name });
+  }
+
+  /** creates and returns options builder for setBotContent */
+  private _setBotContentRequestOptionsBuilder(stream: NodeJS.ReadableStream): TxClientRequestOptionsBuilder {
+    return new TxClientRequestOptionsBuilder(this._sessionCookie)
+      .withHeader_ContentType_Octet()
+      .useMethod_Put()
+      .withBodyStream(stream);
+  }
+
+  /** @inheritdoc */
+  setBotContent(name: string, dir: string): Promise<void> {
+    const zip = archiver('zip', { zlib: { level: 9 } });
+    return new Promise(async (resolve, reject) => {
+      const url = this._setBotContentUrl(name);
+      const stream = zip.directory(dir, false).on('error', (err) => reject(err));
+
+      const responesePromise = this._nodeFetch.fetch(
+        url,
+        this._setBotContentRequestOptionsBuilder(stream).buildNodeFetchRequestInit()
+      );
+      await zip.finalize();
+      try {
+        const resp = await responesePromise;
+        resp.status; // for debugging
+        resolve();
+      } catch (err) {
+        reject(err);
+      }
+    });
   }
 
   /**

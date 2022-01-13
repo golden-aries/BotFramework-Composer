@@ -70,8 +70,14 @@ export async function initServices(botsFolder: string) {
   initTelexyFsClientSync();
   serverInfo = await initTxServerInfo(getSettings());
   txClient = new TxClient(serverInfo, getFetch(), getNodeFetch(), getLogger(), getProfier());
-  //runtime = new TxOriginalRuntimeService(getLogger());
-  runtime = new TxRuntimeService(getLogger());
+  //runtime = new TxRuntimeServiceOriginal(getLogger());
+  runtime = new TxRuntimeService(
+    botsFolder,
+    getTxClient(),
+    getTxPath(),
+    new TxRuntimeServiceOriginal(getLogger()),
+    getLogger()
+  );
 
   botProjectService = new TxProjectService(
     getTxClient(),

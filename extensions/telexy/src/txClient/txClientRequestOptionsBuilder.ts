@@ -1,9 +1,10 @@
 import { IncomingHttpHeaders } from 'http';
+import { RequestInit as NodeFetchRequestInit, BodyInit as NodeFetchBodyInit } from 'node-fetch';
 
 export class TxClientRequestOptionsBuilder {
   private _headers: IncomingHttpHeaders;
   private _method: string = 'POST';
-  private _content?: string;
+  private _content?: string | NodeFetchBodyInit;
 
   /**
    *
@@ -36,9 +37,18 @@ export class TxClientRequestOptionsBuilder {
     this._method = 'POST';
     return this;
   }
+  useMethod_Put(): TxClientRequestOptionsBuilder {
+    this._method = 'PUT';
+    return this;
+  }
 
   withHeader_ContentType_ApplicationJson(): TxClientRequestOptionsBuilder {
     this._headers['Content-Type'] = 'application/json';
+    return this;
+  }
+
+  withHeader_ContentType_Octet(): TxClientRequestOptionsBuilder {
+    this._headers['Content-Type'] = 'application/octet-stream';
     return this;
   }
 
@@ -66,6 +76,11 @@ export class TxClientRequestOptionsBuilder {
     return this;
   }
 
+  withBodyStream(content: NodeJS.ReadableStream): TxClientRequestOptionsBuilder {
+    this._content = content;
+    return this;
+  }
+
   buildRequestInit(): RequestInit {
     const obj: any = {
       headers: this._headers,
@@ -73,5 +88,14 @@ export class TxClientRequestOptionsBuilder {
       method: this._method,
     };
     return <RequestInit>obj;
+  }
+
+  buildNodeFetchRequestInit(): NodeFetchRequestInit {
+    const obj: any = {
+      headers: this._headers,
+      body: this._content,
+      method: this._method,
+    };
+    return <NodeFetchRequestInit>obj;
   }
 }
