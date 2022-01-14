@@ -38,6 +38,7 @@ import { TxNodeFetch } from './txClient/txNodeFetch';
 import { IRuntime } from './common/iRuntime';
 import { TxRuntimeServiceOriginal } from './services/txRuntimeServiceOriginal';
 import { TxRuntimeService } from './services/txRuntimeService';
+import { TxPublish } from './publish/txPublish';
 
 let settings: ISettings;
 let logger: ILogger;
@@ -46,7 +47,6 @@ let pathConvertor: IPathConvertor;
 let profiler: IProfiler;
 let botProjectService: IBotProjectService;
 let telexyFsClientSync: TxFsClientSync;
-let publisher: PublishPlugin<PublishConfig>;
 let storageService: IStorageService;
 let serverInfo: ITxServerInfo;
 let txClient: ITxClient;
@@ -54,11 +54,12 @@ let txPath: TxPath;
 let cache: IFileStorage;
 let nodeFetch: INodeFetch;
 let runtime: IRuntime;
+let publish: PublishPlugin<PublishConfig>;
 
 /**
  * @param botsFolder - botsFolder as configured in Composer
  */
-export async function initServices(botsFolder: string) {
+export async function initServices(botsFolder: string, registration: IExtensionRegistration) {
   settings = await initSettings(botsFolder);
   txPath = new TxPath();
   cache = new TxLocalStorage();
@@ -70,14 +71,14 @@ export async function initServices(botsFolder: string) {
   initTelexyFsClientSync();
   serverInfo = await initTxServerInfo(getSettings());
   txClient = new TxClient(serverInfo, getFetch(), getNodeFetch(), getLogger(), getProfier());
-  //runtime = new TxRuntimeServiceOriginal(getLogger());
-  runtime = new TxRuntimeService(
-    botsFolder,
-    getTxClient(),
-    getTxPath(),
-    new TxRuntimeServiceOriginal(getLogger()),
-    getLogger()
-  );
+  runtime = new TxRuntimeServiceOriginal(getLogger());
+  // runtime = new TxRuntimeService(
+  //   botsFolder,
+  //   getTxClient(),
+  //   getTxPath(),
+  //   new TxRuntimeServiceOriginal(getLogger()),
+  //   getLogger()
+  // );
 
   botProjectService = new TxProjectService(
     getTxClient(),
@@ -97,11 +98,15 @@ export async function initServices(botsFolder: string) {
     getLogger(),
     getProfier()
   );
+
   // storageService = new TxStorageServiceProxy(
   //   originalStorageService,
   //   getLogger(),
   //   getProfier()
   // );
+
+  publish = new TxPublish(registration, logger, profiler);
+  //publish = new TxPublishLocalOriginal(registration, logger, profiler);
 
   logger.logTrace('Telexy Services Initialized');
 }
@@ -185,8 +190,11 @@ export function getBotProjectService(): IBotProjectService {
   return botProjectService;
 }
 
-export function getPublisher(registration: IExtensionRegistration): PublishPlugin<PublishConfig> {
-  return (publisher = publisher ?? new TxPublishLocalOriginal(registration, logger, profiler));
+export function getPublisher(): PublishPlugin<PublishConfig> {
+  if (publish) {
+    return publish;
+  }
+  throw new Error('Telexy Publish Service is not initialized!');
 }
 
 async function initTxServerInfo(settings: ISettings): Promise<ITxServerInfo> {

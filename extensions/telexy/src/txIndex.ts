@@ -7,11 +7,11 @@ import { getPublisher, getRuntime, initServices } from './txServiceProvider';
 async function initialize(registration: IExtensionRegistration): Promise<void> {
   let relativePath = path.join('..', '..', '..', 'Composer', 'packages', 'server', 'build', 'settings');
   const settings = require(relativePath);
-  await initServices(settings.default.botsFolder);
+  await initServices(settings.default.botsFolder, registration);
   //settings.default.platform = 'linux';
   registration.useStorage(TxLocalStorage);
   // register this publishing method with Composer
-  await registration.addPublishMethod(getPublisher(registration));
+  await registration.addPublishMethod(getPublisher());
   //await initRuntimes(registration);
   registration.addRuntimeTemplate(getRuntime());
 }
