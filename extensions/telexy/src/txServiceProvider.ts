@@ -1,44 +1,39 @@
+import { IExtensionRegistration, PublishPlugin } from '@botframework-composer/types';
+import fs from 'fs/promises';
+import * as lodash from 'lodash';
+import os from 'os';
 import path from 'path';
+import originalStorageService from '../../../Composer/packages/server/build/services/storage';
+import { IBotProjectService } from './common/iBotProjectService';
+import { IFetch } from './common/iFetch';
+import { IFileStorage } from './common/iFileStorage';
+import { INodeFetch } from './common/iNodeFetch';
 import { ILogger, IPathConvertor, IProfiler, ISettings, LogLevel } from './common/interfaces';
+import { IRuntime } from './common/iRuntime';
+import { ISignalrClient } from './common/iSignalrClient';
+import { IStorageService } from './common/iStorageService';
+import { ITxClient } from './common/iTxClient';
+import { ITxServerInfo } from './common/iTxServerInfo';
+import { TxPath } from './common/txPath';
+import { Profiler } from './common/txProfiler';
 import { IConfiguration } from './configuration/abstractions';
 import { JsonConfiguration } from './configuration/jsonConfiguration';
-import { TxFsClientSync } from './txClient/txFsClientSync';
-import { TxStorageSync } from './storage/txStorageSync';
 import { ConsoleLogger } from './log/txLogger';
-import os from 'os';
-import fs from 'fs/promises';
+import { TxPublish } from './publish/txPublish';
+import { PublishConfig } from './publish/txPublishLocalOriginal';
+import { TxProjectService } from './services/txProjectService';
+import { TxRuntimeService } from './services/txRuntimeService';
+import { TxRuntimeServiceOriginal } from './services/txRuntimeServiceOriginal';
+import { TxStorageService } from './services/txStorageService';
+import { TxLocalStorage } from './storage/txLocalStorage';
+import { TxStorageSync } from './storage/txStorageSync';
 import { PathConvertor } from './txClient/pathConvertor';
-import { Profiler } from './common/txProfiler';
-import { IBotProjectService } from './common/iBotProjectService';
-import { TxProjectServiceProxy } from './services/txProjectServiceProxy';
-import * as lodash from 'lodash';
-import {
-  DialogSetting,
-  PublishPlugin,
-  IExtensionRegistration,
-  IBotProject,
-  UserIdentity,
-} from '@botframework-composer/types';
-import { PublishConfig, TxPublishLocalOriginal } from './publish/txPublishLocalOriginal';
-import originalStorageService from '../../../Composer/packages/server/build/services/storage';
-import { IStorageService } from './common/iStorageService';
-import { TxStorageServiceProxy } from './services/txStorageServiceProxy';
-import { ITxServerInfo } from './common/iTxServerInfo';
-import { ITxClient } from './common/iTxClient';
+import { SessionCookieExtractor } from './txClient/sessionCookieExtractor';
+import { SignalrClientFactory } from './txClient/signalrClientFactory';
 import { TxClient } from './txClient/txClient';
 import { TxFetch } from './txClient/txFetch';
-import { TxStorageService } from './services/txStorageService';
-import { TxPath } from './common/txPath';
-import { TxProjectService } from './services/txProjectService';
-import { TxLocalStorage } from './storage/txLocalStorage';
-import { IFileStorage } from './common/iFileStorage';
-import { IFetch } from './common/iFetch';
-import { INodeFetch } from './common/iNodeFetch';
+import { TxFsClientSync } from './txClient/txFsClientSync';
 import { TxNodeFetch } from './txClient/txNodeFetch';
-import { IRuntime } from './common/iRuntime';
-import { TxRuntimeServiceOriginal } from './services/txRuntimeServiceOriginal';
-import { TxRuntimeService } from './services/txRuntimeService';
-import { TxPublish } from './publish/txPublish';
 
 let settings: ISettings;
 let logger: ILogger;
@@ -55,6 +50,8 @@ let cache: IFileStorage;
 let nodeFetch: INodeFetch;
 let runtime: IRuntime;
 let publish: PublishPlugin<PublishConfig>;
+let sessionCookie: string;
+let signalrClient: ISignalrClient;
 
 /**
  * @param botsFolder - botsFolder as configured in Composer
@@ -70,15 +67,17 @@ export async function initServices(botsFolder: string, registration: IExtensionR
   profiler = new Profiler(getSettings(), getLogger());
   initTelexyFsClientSync();
   serverInfo = await initTxServerInfo(getSettings());
-  txClient = new TxClient(serverInfo, getFetch(), getNodeFetch(), getLogger(), getProfier());
-  runtime = new TxRuntimeServiceOriginal(getLogger());
-  // runtime = new TxRuntimeService(
-  //   botsFolder,
-  //   getTxClient(),
-  //   getTxPath(),
-  //   new TxRuntimeServiceOriginal(getLogger()),
-  //   getLogger()
-  // );
+  sessionCookie = SessionCookieExtractor.getSessionCookie(serverInfo);
+  txClient = new TxClient(serverInfo, getFetch(), getNodeFetch(), getLogger(), getProfier(), sessionCookie);
+
+  //runtime = new TxRuntimeServiceOriginal(getLogger());
+  runtime = new TxRuntimeService(
+    botsFolder,
+    getTxClient(),
+    getTxPath(),
+    new TxRuntimeServiceOriginal(getLogger()),
+    getLogger()
+  );
 
   botProjectService = new TxProjectService(
     getTxClient(),
@@ -107,6 +106,8 @@ export async function initServices(botsFolder: string, registration: IExtensionR
 
   publish = new TxPublish(registration, logger, profiler);
   //publish = new TxPublishLocalOriginal(registration, logger, profiler);
+
+  signalrClient = await new SignalrClientFactory(serverInfo.uri, ['BotHub'], sessionCookie).getSignalrClient();
 
   logger.logTrace('Telexy Services Initialized');
 }
@@ -253,4 +254,11 @@ export function getRuntime(): IRuntime {
     return runtime;
   }
   throw new Error('Telexy runtime has not been initialized!');
+}
+
+export function getSignalrClient(): ISignalrClient {
+  if (signalrClient) {
+    return signalrClient;
+  }
+  throw new Error('Telexy signalr client has not been initialized!');
 }

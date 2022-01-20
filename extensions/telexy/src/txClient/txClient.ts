@@ -1,18 +1,16 @@
-import { UserIdentity } from '@botframework-composer/types';
-import { IBlobFolderContentRaw, IBlobRootContent } from '../common/iFileSystemContentInterfaces';
+import archiver from 'archiver';
+import fs from 'fs/promises';
+import os from 'os';
+import path from 'path';
+import { IFetch } from '../common/iFetch';
+import { IBlobFolderContentRaw } from '../common/iFileSystemContentInterfaces';
+import { INodeFetch } from '../common/iNodeFetch';
 import { ILogger, IProfiler } from '../common/interfaces';
 import { ITxClient } from '../common/iTxClient';
 import { ITxServerInfo } from '../common/iTxServerInfo';
+import { SessionCookieExtractor } from './sessionCookieExtractor';
 import { TxClientRequestOptionsBuilder } from './txClientRequestOptionsBuilder';
-import fs from 'fs/promises';
-import fssync from 'fs';
-import path from 'path';
-import os from 'os';
-import { IFetch } from '../common/iFetch';
-import { INodeFetch } from '../common/iNodeFetch';
-import archiver from 'archiver';
 export class TxClient implements ITxClient {
-  private _sessionCookie: string = '';
   /**
    *
    */
@@ -21,7 +19,8 @@ export class TxClient implements ITxClient {
     private _http: IFetch,
     private _nodeFetch: INodeFetch,
     private _logger: ILogger,
-    private _profiler: IProfiler
+    private _profiler: IProfiler,
+    private _sessionCookie: string
   ) {
     if (!_serverInfo) {
       throw new Error('Constructor argument "serverInfo" is falsy');
@@ -35,7 +34,6 @@ export class TxClient implements ITxClient {
     if (!_profiler) {
       throw new Error('Constructor argument "profiler" is falsy');
     }
-    this._initSessionCookie();
   }
 
   /**
@@ -75,28 +73,6 @@ export class TxClient implements ITxClient {
       }
     });
   }
-
-  /**
-   * converts session cookie which is a sring in json format
-   * into a string of name/value pairs divided by semicolon
-   *  */
-  private _initSessionCookie() {
-    let cookie: [{ name: string; value: string }];
-    try {
-      const cookieStr = this._serverInfo.sessionCookie;
-      cookie = <[{ name: string; value: string }]>JSON.parse(cookieStr);
-    } catch {
-      throw new Error(`${this}: Cookie is not in JSON parseable format!`);
-    }
-    cookie.forEach((element, index) => {
-      if (index === 0) {
-        this._sessionCookie += `${element.name}=${element.value}`;
-      } else {
-        this._sessionCookie += `; ${element.name}=${element.value}`;
-      }
-    });
-  }
-
   async getBots(): Promise<IBlobFolderContentRaw> {
     try {
       const url = this._getBotsUrl();
