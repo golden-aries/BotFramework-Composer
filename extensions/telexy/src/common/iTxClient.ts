@@ -16,4 +16,7 @@ export interface ITxClient {
   setBotContent(name: string, dir: string): Promise<void>;
   checkBot(name: string): Promise<boolean>;
   getBots(): Promise<IBlobFolderContentRaw>;
+
+  /** resets bot */
+  resetBot(name: string): Promise<void>;
 }

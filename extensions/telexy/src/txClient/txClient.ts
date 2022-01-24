@@ -123,6 +123,21 @@ export class TxClient implements ITxClient {
     }
   }
 
+  /** @inheritdoc */
+  async resetBot(name: string): Promise<void> {
+    try {
+      const url = this._resetBotUrl(name);
+      const init = this._resetBotRequestOptionsBuilder().buildRequestInit();
+      await this._http.fetch(url, init);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  private _resetBotUrl(name: string): RequestInfo {
+    return this._getMvcTargetUrl('Bot', 'resetBot', { name: name });
+  }
+
   private _getBotsUrl(): RequestInfo {
     return this._getApiTargetUrl('BotProviderBfcApi', 'getBots');
   }
@@ -144,6 +159,10 @@ export class TxClient implements ITxClient {
   }
   private _getBotContentRequestOptionsBuilder(): TxClientRequestOptionsBuilder {
     return new TxClientRequestOptionsBuilder(this._sessionCookie).withHeader_Accept_ApplicationOctetStream();
+  }
+
+  private _resetBotRequestOptionsBuilder(): TxClientRequestOptionsBuilder {
+    return new TxClientRequestOptionsBuilder(this._sessionCookie).useMethod_Put();
   }
 
   /**

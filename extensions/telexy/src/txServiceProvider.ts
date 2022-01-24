@@ -71,7 +71,7 @@ export async function initServices(botsFolder: string, registration: IExtensionR
   initTelexyFsClientSync();
   serverInfo = await initTxServerInfo(getSettings());
   sessionCookie = SessionCookieExtractor.getSessionCookie(serverInfo);
-  txClient = new TxClient(serverInfo, getFetch(), getNodeFetch(), getLogger(), getProfier(), sessionCookie);
+  txClient = new TxClient(serverInfo, getFetch(), getNodeFetch(), getLogger(), getProfiler(), sessionCookie);
 
   //runtime = new TxRuntimeServiceOriginal(getLogger());
   runtime = new TxRuntimeService(
@@ -88,7 +88,7 @@ export async function initServices(botsFolder: string, registration: IExtensionR
     getSettings().botsFolder,
     getCache(),
     getLogger(),
-    getProfier()
+    getProfiler()
   );
   //botProjectService = new TxProjectServiceProxy(getLogger(), getProfier());
 
@@ -98,7 +98,7 @@ export async function initServices(botsFolder: string, registration: IExtensionR
     getTxPath(),
     originalStorageService,
     getLogger(),
-    getProfier()
+    getProfiler()
   );
 
   // storageService = new TxStorageServiceProxy(
@@ -107,7 +107,15 @@ export async function initServices(botsFolder: string, registration: IExtensionR
   //   getProfier()
   // );
 
-  publish = new TxPublish(registration, getSettings().telexyBotForwarderPort, getTxBotProjectEx(), logger, profiler);
+  publish = new TxPublish(
+    registration,
+    getSettings().telexyBotForwarderPort,
+    getTxBotProjectEx(),
+    getTxClient(),
+    getLogger(),
+    getProfiler()
+  );
+
   //publish = new TxPublishLocalOriginal(registration, logger, profiler);
 
   signalrClient = await new SignalrClientFactory(serverInfo.uri, ['BotHub'], sessionCookie).getSignalrClient();
@@ -170,7 +178,7 @@ function getLogger(): ILogger {
   return logger;
 }
 
-function getProfier(): IProfiler {
+function getProfiler(): IProfiler {
   if (!profiler) {
     throw new Error('Profiler is not initialized');
   }

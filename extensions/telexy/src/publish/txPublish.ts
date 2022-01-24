@@ -20,7 +20,9 @@ import {
 import { RuntimeLogServerOriginal } from './txRuntimeLogServerOriginal';
 import { ILogger, IProfiler } from '../common/interfaces';
 import { TxBotProjectEx } from '../common/txBotProjectEx';
+import { ITxClient } from '../common/iTxClient';
 
+/** stores data about running bot */
 interface RunningBot {
   process?: ChildProcess;
   port?: number;
@@ -30,7 +32,11 @@ interface RunningBot {
     runtimeLog?: string;
     runtimeError?: string;
   };
+  name?: string;
+  dir?: string;
+  isTelexyHostedBot?: boolean;
 }
+
 export interface PublishConfig {
   botId: string;
   version: string;
@@ -67,6 +73,7 @@ export class TxPublish implements PublishPlugin<PublishConfig> {
     private _composer: IExtensionRegistration,
     private _telexyBotForwarderPort: number,
     private _projectHelper: TxBotProjectEx,
+    private _txClient: ITxClient,
     private _logger: ILogger,
     private _profiler: IProfiler
   ) {
@@ -165,8 +172,10 @@ export class TxPublish implements PublishPlugin<PublishConfig> {
         await this.stopBot(botId);
       }
       if (!port) {
+        let isTelexyHostedProject: boolean = false;
         if (this._projectHelper.isTelexyHostedProject(project)) {
           port = this._telexyBotForwarderPort;
+          isTelexyHostedProject = true;
         } else {
           // Portfinder is the stablest amongst npm libraries for finding ports. https://github.com/http-party/node-portfinder/issues/61. It does not support supplying an array of ports to pick from as we can have a race conidtion when starting multiple bots at the same time. As a result, getting the max port number out of the range and starting the range from the max.
           const maxPort = max(map(TxPublish.runningBots, 'port')) ?? 3979;
@@ -180,6 +189,9 @@ export class TxPublish implements PublishPlugin<PublishConfig> {
         const updatedBotData: RunningBot = {
           ...TxPublish.runningBots[botId],
           port,
+          name: project.name,
+          dir: project.dir,
+          isTelexyHostedBot: isTelexyHostedProject,
         };
         TxPublish.runningBots[botId] = updatedBotData;
       }
@@ -468,28 +480,33 @@ export class TxPublish implements PublishPlugin<PublishConfig> {
   };
 
   // make it public, so that able to stop runtime before switch ejected runtime.
-  public stopBot = async (botId: string) => {
-    const proc = TxPublish.runningBots[botId]?.process;
-    const port = TxPublish.runningBots[botId]?.port;
+  public stopBot = async (botId: string): Promise<void> => {
+    const runningBot = TxPublish.runningBots[botId];
+    if (runningBot.isTelexyHostedBot) {
+      await this._txClient.resetBot(runningBot.name!);
+    } else {
+      const proc = TxPublish.runningBots[botId]?.process;
+      const port = TxPublish.runningBots[botId]?.port;
 
-    if (port) {
-      this._composer.log('Killing process at port %d', port);
+      if (port) {
+        this._composer.log('Killing process at port %d', port);
 
-      await new Promise((resolve, reject) => {
-        setTimeout(async () => {
-          killPort(port)
-            .then(() => {
-              if (proc) {
-                this.removeListener(proc);
-              }
-              delete TxPublish.runningBots[botId];
-              resolve('Stopped');
-            })
-            .catch((err: any) => {
-              reject(err);
-            });
-        }, 1000);
-      });
+        await new Promise((resolve, reject) => {
+          setTimeout(async () => {
+            killPort(port)
+              .then(() => {
+                if (proc) {
+                  this.removeListener(proc);
+                }
+                delete TxPublish.runningBots[botId];
+                resolve('Stopped');
+              })
+              .catch((err: any) => {
+                reject(err);
+              });
+          }, 1000);
+        });
+      }
     }
   };
 
