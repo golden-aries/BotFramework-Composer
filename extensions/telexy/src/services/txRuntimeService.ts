@@ -25,7 +25,7 @@ export class TxRuntimeService implements IRuntime {
 
   private _buildName: string = 'build';
   /** @inheritdoc */
-  build = async (runtimePath: string, project: IBotProject) => {
+  build = async (runtimePath: string, project: IBotProject, fullSettings?: DialogSetting, port?: number) => {
     this._logger.logTrace(
       '%s %s runtimePath: %s project %s %s',
       this,
@@ -36,7 +36,6 @@ export class TxRuntimeService implements IRuntime {
     );
     if (this._txPath.isChildOf(runtimePath, this._botsFolder)) {
       await this._txClient.setBotContent(project.name, runtimePath);
-      throw new Error(`Not impelmented yet! ${this} ${this._buildName}`);
     } else if (this._originalRuntime) {
       await this._originalRuntime.build(runtimePath, project);
     } else {

@@ -14,6 +14,7 @@ import { ISignalrClient } from './common/iSignalrClient';
 import { IStorageService } from './common/iStorageService';
 import { ITxClient } from './common/iTxClient';
 import { ITxServerInfo } from './common/iTxServerInfo';
+import { TxBotProjectEx } from './common/txBotProjectEx';
 import { TxPath } from './common/txPath';
 import { Profiler } from './common/txProfiler';
 import { IConfiguration } from './configuration/abstractions';
@@ -52,6 +53,7 @@ let runtime: IRuntime;
 let publish: PublishPlugin<PublishConfig>;
 let sessionCookie: string;
 let signalrClient: ISignalrClient;
+let txBotProjectEx: TxBotProjectEx;
 
 /**
  * @param botsFolder - botsFolder as configured in Composer
@@ -60,6 +62,7 @@ export async function initServices(botsFolder: string, registration: IExtensionR
   settings = await initSettings(botsFolder);
   txPath = new TxPath();
   cache = new TxLocalStorage();
+  txBotProjectEx = new TxBotProjectEx(getSettings().botsFolder, getTxPath());
   pathConvertor = new PathConvertor(getSettings().botsFolder);
   logger = new ConsoleLogger(getSettings());
   cachedFetch = new TxFetch({ fetch: fetch }, getLogger());
@@ -104,7 +107,7 @@ export async function initServices(botsFolder: string, registration: IExtensionR
   //   getProfier()
   // );
 
-  publish = new TxPublish(registration, logger, profiler);
+  publish = new TxPublish(registration, getSettings().telexyBotForwarderPort, getTxBotProjectEx(), logger, profiler);
   //publish = new TxPublishLocalOriginal(registration, logger, profiler);
 
   signalrClient = await new SignalrClientFactory(serverInfo.uri, ['BotHub'], sessionCookie).getSignalrClient();
@@ -120,6 +123,7 @@ function defaultSettings(): ISettings {
     botsFolder: os.homedir(),
     performanceProfiling: false,
     bfcServerCatalog: 'bfcServerCatalog.json',
+    telexyBotForwarderPort: 5030,
   };
 }
 
@@ -259,6 +263,13 @@ export function getRuntime(): IRuntime {
 export function getSignalrClient(): ISignalrClient {
   if (signalrClient) {
     return signalrClient;
+  }
+  throw new Error('Telexy signalr client has not been initialized!');
+}
+
+export function getTxBotProjectEx(): TxBotProjectEx {
+  if (txBotProjectEx) {
+    return txBotProjectEx;
   }
   throw new Error('Telexy signalr client has not been initialized!');
 }

@@ -19,6 +19,7 @@ import {
 } from '@botframework-composer/types';
 import { RuntimeLogServerOriginal } from './txRuntimeLogServerOriginal';
 import { ILogger, IProfiler } from '../common/interfaces';
+import { TxBotProjectEx } from '../common/txBotProjectEx';
 
 interface RunningBot {
   process?: ChildProcess;
@@ -62,7 +63,13 @@ export class TxPublish implements PublishPlugin<PublishConfig> {
   public description = 'Publish bot to local runtime';
   static runningBots: { [key: string]: RunningBot } = {};
 
-  constructor(private _composer: IExtensionRegistration, private _logger: ILogger, private _profiler: IProfiler) {
+  constructor(
+    private _composer: IExtensionRegistration,
+    private _telexyBotForwarderPort: number,
+    private _projectHelper: TxBotProjectEx,
+    private _logger: ILogger,
+    private _profiler: IProfiler
+  ) {
     if (!this._composer) {
       throw new Error(`${this}.constructor: parameter _composer is falsy`);
     }
@@ -144,7 +151,7 @@ export class TxPublish implements PublishPlugin<PublishConfig> {
     botId: string,
     version: string,
     fullSettings: DialogSetting,
-    project: any,
+    project: IBotProject,
     user: any
   ) => {
     try {
@@ -158,15 +165,18 @@ export class TxPublish implements PublishPlugin<PublishConfig> {
         await this.stopBot(botId);
       }
       if (!port) {
-        // Portfinder is the stablest amongst npm libraries for finding ports. https://github.com/http-party/node-portfinder/issues/61. It does not support supplying an array of ports to pick from as we can have a race conidtion when starting multiple bots at the same time. As a result, getting the max port number out of the range and starting the range from the max.
-        const maxPort = max(map(TxPublish.runningBots, 'port')) ?? 3979;
-        const retry = 10;
-        let i = 0;
-        do {
-          port = await portfinder.getPortPromise({ port: maxPort + 1, stopPort: 6000 });
-          i++;
-        } while (this.isPortUsed(port) && i < retry);
-
+        if (this._projectHelper.isTelexyHostedProject(project)) {
+          port = this._telexyBotForwarderPort;
+        } else {
+          // Portfinder is the stablest amongst npm libraries for finding ports. https://github.com/http-party/node-portfinder/issues/61. It does not support supplying an array of ports to pick from as we can have a race conidtion when starting multiple bots at the same time. As a result, getting the max port number out of the range and starting the range from the max.
+          const maxPort = max(map(TxPublish.runningBots, 'port')) ?? 3979;
+          const retry = 10;
+          let i = 0;
+          do {
+            port = await portfinder.getPortPromise({ port: maxPort + 1, stopPort: 6000 });
+            i++;
+          } while (this.isPortUsed(port) && i < retry);
+        }
         const updatedBotData: RunningBot = {
           ...TxPublish.runningBots[botId],
           port,
@@ -175,7 +185,7 @@ export class TxPublish implements PublishPlugin<PublishConfig> {
       }
 
       const runtime = this._composer.getRuntimeByProject(project);
-      if (project.settings.runtime.path && project.settings.runtime.command) {
+      if (project.settings?.runtime.path && project.settings.runtime.command) {
         const runtimePath = project.getRuntimePath();
         this._logger.logTrace('%s.publishAsync launch building %s, %s', this, botId, version);
         await runtime.build(runtimePath, project, fullSettings, port);
@@ -184,7 +194,7 @@ export class TxPublish implements PublishPlugin<PublishConfig> {
         throw new Error('Custom runtime settings are incomplete. Please specify path and command.');
       }
       await this.setBot(botId, version, fullSettings, project, port);
-      this._profiler.loghrtime('TelexyPublisher sttarted', botId, t);
+      this._profiler.loghrtime('TelexyPublisher started', botId, t);
     } catch (error) {
       await this.stopBot(botId);
       this.setBotStatus(botId, {
@@ -273,20 +283,23 @@ export class TxPublish implements PublishPlugin<PublishConfig> {
 
   // start bot in current version
 
-  private setBot = async (botId: string, version: string, settings: any, project: any, port: number) => {
+  private setBot = async (botId: string, version: string, settings: any, project: IBotProject, port: number) => {
     // get port, and stop previous bot if exist
     try {
-      // if a port (e.g. --port 5000) is configured in the custom runtime command try to parse and set this port
-      if (settings.runtime.command && settings.runtime.command.includes('--port')) {
-        try {
-          port = parseInt(/--port (\d+)/.exec(settings.runtime.command)![1]);
-        } catch (err) {
-          console.warn(`Custom runtime command has an invalid port argument.`);
+      if (this._projectHelper.isTelexyHostedProject(project)) {
+        await this.startBot(botId, port, settings, project);
+      } else {
+        // if a port (e.g. --port 5000) is configured in the custom runtime command try to parse and set this port
+        if (settings.runtime.command && settings.runtime.command.includes('--port')) {
+          try {
+            port = parseInt(/--port (\d+)/.exec(settings.runtime.command)![1]);
+          } catch (err) {
+            console.warn(`Custom runtime command has an invalid port argument.`);
+          }
         }
+        // start the bot process
+        await this.startBot(botId, port, settings, project);
       }
-
-      // start the bot process
-      await this.startBot(botId, port, settings, project);
     } catch (error) {
       await this.stopBot(botId);
       this.setBotStatus(botId, {
@@ -298,75 +311,84 @@ export class TxPublish implements PublishPlugin<PublishConfig> {
     }
   };
 
-  private startBot = async (botId: string, port: number, settings: any, project: any): Promise<string> => {
+  private startBot = async (botId: string, port: number, settings: any, project: IBotProject): Promise<string> => {
     const botDir = project.getRuntimePath();
 
-    const commandAndArgs =
-      settings.runtime?.customRuntime === true
-        ? settings.runtime.command.split(/\s+/)
-        : this._composer.getRuntimeByProject(project).startCommand.split(/\s+/);
+    if (this._projectHelper.isTelexyHostedProject(project)) {
+      this.setBotStatus(botId, {
+        port: port,
+        status: 200,
+        result: { message: 'Runtime started' },
+      });
+      return 'Runtime started';
+    } else {
+      const commandAndArgs =
+        settings.runtime?.customRuntime === true
+          ? settings.runtime.command.split(/\s+/)
+          : this._composer.getRuntimeByProject(project).startCommand.split(/\s+/);
 
-    return new Promise((resolve, reject) => {
-      // ensure the specified runtime path exists
-      if (!fs.existsSync(botDir)) {
-        reject(`Runtime path ${botDir} does not exist.`);
-        return;
-      }
-      // take the 0th item off the array, leaving just the args
-      this._composer.log('Starting bot on port %d. (%s)', port, commandAndArgs.join(' '));
-      const startCommand = commandAndArgs.shift();
+      return new Promise((resolve, reject) => {
+        // ensure the specified runtime path exists
+        if (!fs.existsSync(botDir)) {
+          reject(`Runtime path ${botDir} does not exist.`);
+          return;
+        }
+        // take the 0th item off the array, leaving just the args
+        this._composer.log('Starting bot on port %d. (%s)', port, commandAndArgs.join(' '));
+        const startCommand = commandAndArgs.shift();
 
-      let config: string[] = [];
-      let skillHostEndpoint;
-      if (isSkillHostUpdateRequired(settings?.skillHostEndpoint)) {
-        // Update skillhost endpoint only if ngrok url not set meaning empty or localhost url
-        skillHostEndpoint = `http://127.0.0.1:${port}/api/skills`;
-      }
-      config = this.getConfig(settings, skillHostEndpoint);
-      let spawnProcess: any;
-      const args = [...commandAndArgs, '--port', port, `--urls`, `http://0.0.0.0:${port}`, ...config];
-      this._composer.log('Executing command with arguments: %s %s', startCommand, args.join(' '));
-      try {
-        spawnProcess = spawn(startCommand, args, {
-          cwd: botDir,
-          stdio: ['ignore', 'pipe', 'pipe'],
-          detached: !isWin, // detach in non-windows
-          shell: true, // run in a shell on windows so `npm start` doesn't need to be `npm.cmd start`
-        });
-        this._composer.log('Started process %d', spawnProcess.pid);
-        this.setBotStatus(botId, {
-          process: spawnProcess,
-          port,
-          status: 202,
-          result: { message: 'Starting runtime' },
-        });
+        let config: string[] = [];
+        let skillHostEndpoint;
+        if (isSkillHostUpdateRequired(settings?.skillHostEndpoint)) {
+          // Update skillhost endpoint only if ngrok url not set meaning empty or localhost url
+          skillHostEndpoint = `http://127.0.0.1:${port}/api/skills`;
+        }
+        config = this.getConfig(settings, skillHostEndpoint);
+        let spawnProcess: any;
+        const args = [...commandAndArgs, '--port', port, `--urls`, `http://0.0.0.0:${port}`, ...config];
+        this._composer.log('Executing command with arguments: %s %s', startCommand, args.join(' '));
+        try {
+          spawnProcess = spawn(startCommand, args, {
+            cwd: botDir,
+            stdio: ['ignore', 'pipe', 'pipe'],
+            detached: !isWin, // detach in non-windows
+            shell: true, // run in a shell on windows so `npm start` doesn't need to be `npm.cmd start`
+          });
+          this._composer.log('Started process %d', spawnProcess.pid);
+          this.setBotStatus(botId, {
+            process: spawnProcess,
+            port,
+            status: 202,
+            result: { message: 'Starting runtime' },
+          });
 
-        // check if the port if ready for connecting, issue: https://github.com/microsoft/BotFramework-Composer/issues/3728
-        // retry every 500ms, timeout 2min
-        const retryTime = 500;
-        const timeOutTime = 120000;
-        const processLog = this._composer.log.extend(spawnProcess.pid);
-        this.addListeners(spawnProcess, botId, processLog);
+          // check if the port if ready for connecting, issue: https://github.com/microsoft/BotFramework-Composer/issues/3728
+          // retry every 500ms, timeout 2min
+          const retryTime = 500;
+          const timeOutTime = 120000;
+          const processLog = this._composer.log.extend(spawnProcess.pid);
+          this.addListeners(spawnProcess, botId, processLog);
 
-        tcpPortUsed.waitUntilUsedOnHost(port, '0.0.0.0', retryTime, timeOutTime).then(
-          () => {
-            this.setBotStatus(botId, {
-              process: spawnProcess,
-              port: port,
-              status: 200,
-              result: { message: 'Runtime started' },
-            });
-            resolve('Runtime started');
-          },
-          (err) => {
-            reject(`Bot on localhost:${port} not working, error message: ${err.message}`);
-          }
-        );
-      } catch (err) {
-        reject(err);
-        throw err;
-      }
-    });
+          tcpPortUsed.waitUntilUsedOnHost(port, '0.0.0.0', retryTime, timeOutTime).then(
+            () => {
+              this.setBotStatus(botId, {
+                process: spawnProcess,
+                port: port,
+                status: 200,
+                result: { message: 'Runtime started' },
+              });
+              resolve('Runtime started');
+            },
+            (err) => {
+              reject(`Bot on localhost:${port} not working, error message: ${err.message}`);
+            }
+          );
+        } catch (err) {
+          reject(err);
+          throw err;
+        }
+      });
+    }
   };
 
   private getConfig = (config: DialogSetting, skillHostEndpointUrl?: string): string[] => {
