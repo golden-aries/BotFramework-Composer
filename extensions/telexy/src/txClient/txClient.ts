@@ -135,7 +135,7 @@ export class TxClient implements ITxClient {
   }
 
   private _resetBotUrl(name: string): RequestInfo {
-    return this._getMvcTargetUrl('Bot', 'resetBot', { name: name });
+    return this._getMvcTargetUrl('Bot', 'resetBotByName', { botName: name });
   }
 
   private _getBotsUrl(): RequestInfo {
