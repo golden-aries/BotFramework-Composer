@@ -9,7 +9,7 @@ export interface ISettings {
   botsFolder: string;
   performanceProfiling: boolean;
   bfcServerCatalog: string;
-  telexyBotForwarderPort: number;
+  telexyBotForwarderPath: string;
 }
 
 export enum LogLevel {

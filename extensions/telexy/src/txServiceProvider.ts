@@ -109,7 +109,7 @@ export async function initServices(botsFolder: string, registration: IExtensionR
 
   publish = new TxPublish(
     registration,
-    getSettings().telexyBotForwarderPort,
+    getSettings().telexyBotForwarderPath,
     getTxBotProjectEx(),
     getTxClient(),
     getLogger(),
@@ -131,7 +131,7 @@ function defaultSettings(): ISettings {
     botsFolder: os.homedir(),
     performanceProfiling: false,
     bfcServerCatalog: 'bfcServerCatalog.json',
-    telexyBotForwarderPort: 5030,
+    telexyBotForwarderPath: 'D:\\src\\telexy\\TelexyBotForwarder',
   };
 }
 
