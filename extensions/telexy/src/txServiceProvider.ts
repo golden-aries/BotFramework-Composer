@@ -119,7 +119,7 @@ export async function initServices(botsFolder: string, registration: IExtensionR
 
   //publish = new TxPublishLocalOriginal(registration, logger, profiler);
 
-  signalrClient = await new SignalrClientFactory(serverInfo.uri, ['BotHub'], sessionCookie).getSignalrClient();
+  //signalrClient = await new SignalrClientFactory(serverInfo.uri, ['BotHub'], sessionCookie).getSignalrClient();
 
   logger.logTrace('Telexy Services Initialized');
 }
