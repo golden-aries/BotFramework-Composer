@@ -19,7 +19,7 @@ export class CMFusionFSDataSourceClient {
 
   constructor(protected settings: ISettings, protected http: IFetch, protected logger: ILogger) {
     this.http = http ? http : <any>window;
-    this.baseUrl = settings.baseUrl;
+    this.baseUrl = settings.cloudBaseUrl;
   }
 
   protected getBuilder() {

@@ -3,13 +3,14 @@ export interface IBotComposerLogger {
 }
 
 export interface ISettings {
-  baseUrl: string;
+  cloudBaseUrl: string;
   apiKey: string;
   logLevel: LogLevel;
   botsFolder: string;
   performanceProfiling: boolean;
   bfcServerCatalog: string;
   telexyBotForwarderPath: string;
+  composerBaseUrl: string;
 }
 
 export enum LogLevel {

@@ -73,6 +73,7 @@ export class TxPublish implements PublishPlugin<PublishConfig> {
     private _composer: IExtensionRegistration,
     private _telexyBotForwarderPath: string,
     private _projectHelper: TxBotProjectEx,
+    private _composerBaseUrl: string,
     private _txClient: ITxClient,
     private _logger: ILogger,
     private _profiler: IProfiler
@@ -335,7 +336,9 @@ export class TxPublish implements PublishPlugin<PublishConfig> {
     if (this._projectHelper.isTelexyHostedProject(project)) {
       botDir = this._telexyBotForwarderPath;
       const botName = this._projectHelper.getTelexyBotName(project);
-      commandAndArgs = `dotnet run --project TelexyBotForwarder.csproj --TxSettings:BotName ${botName}`.split(/\s+/);
+      commandAndArgs = `dotnet run --project TelexyBotForwarder.csproj --TxSettings:BotName ${botName} --TxSettings:ComposerUrl ${this._composerBaseUrl}`.split(
+        /\s+/
+      );
     }
 
     return new Promise((resolve, reject) => {

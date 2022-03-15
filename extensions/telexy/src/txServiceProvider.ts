@@ -111,6 +111,7 @@ export async function initServices(botsFolder: string, registration: IExtensionR
     registration,
     getSettings().telexyBotForwarderPath,
     getTxBotProjectEx(),
+    getSettings().composerBaseUrl,
     getTxClient(),
     getLogger(),
     getProfiler()
@@ -125,13 +126,14 @@ export async function initServices(botsFolder: string, registration: IExtensionR
 
 function defaultSettings(): ISettings {
   return {
-    baseUrl: 'http://localhost',
+    cloudBaseUrl: 'http://localhost:5102',
     apiKey: '',
     logLevel: LogLevel.Warning,
     botsFolder: os.homedir(),
     performanceProfiling: false,
     bfcServerCatalog: 'bfcServerCatalog.json',
     telexyBotForwarderPath: 'D:\\src\\telexy\\TelexyBotForwarder',
+    composerBaseUrl: 'http://localhost',
   };
 }
 
@@ -214,7 +216,7 @@ async function initTxServerInfo(settings: ISettings): Promise<ITxServerInfo> {
   const filePath = path.join(os.homedir(), '.telexy', settings.bfcServerCatalog);
   const buf = await fs.readFile(filePath);
   const arr = JSON.parse(buf.toString()) as [string, ITxServerInfo][];
-  const result = arr.find((value) => areEqUri(value[1].uri, settings.baseUrl));
+  const result = arr.find((value) => areEqUri(value[1].uri, settings.cloudBaseUrl));
   if (!result) {
     throw new Error('Telexy Server Info is not found!');
   }
