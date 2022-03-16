@@ -1,0 +1,8 @@
+FROM microsoft_bfc:2.1.1 AS mbfc
+#WORKDIR /src/extensions/telexy
+COPY ./extensions/telexy /app/extensions/telexy
+#RUN ["npm", "install", "-g", "typescript"]
+#RUN ["yarn", "install"]
+#COPY ./extensions/telexy/node_modules/@botframework-composer/ ./node_modules/@botframework-composer/
+#RUN ["yarn", "build"]
+ENTRYPOINT [ "/bin/bash" ]
