@@ -18,7 +18,7 @@ import {
   UserIdentity,
 } from '@botframework-composer/types';
 import { RuntimeLogServerOriginal } from './txRuntimeLogServerOriginal';
-import { ILogger, IProfiler } from '../common/interfaces';
+import { ILogger, IProfiler, ISettings } from '../common/interfaces';
 import { TxBotProjectEx } from '../common/txBotProjectEx';
 import { ITxClient } from '../common/iTxClient';
 
@@ -71,9 +71,8 @@ export class TxPublish implements PublishPlugin<PublishConfig> {
 
   constructor(
     private _composer: IExtensionRegistration,
-    private _telexyBotForwarderPath: string,
     private _projectHelper: TxBotProjectEx,
-    private _composerBaseUrl: string,
+    private _iSettings: ISettings,
     private _txClient: ITxClient,
     private _logger: ILogger,
     private _profiler: IProfiler
@@ -328,17 +327,20 @@ export class TxPublish implements PublishPlugin<PublishConfig> {
   private startBot = async (botId: string, port: number, settings: any, project: IBotProject): Promise<string> => {
     let botDir = project.getRuntimePath();
 
-    let commandAndArgs =
+    let commandAndArgs: string[] =
       settings.runtime?.customRuntime === true
         ? settings.runtime.command.split(/\s+/)
         : this._composer.getRuntimeByProject(project).startCommand.split(/\s+/);
 
     if (this._projectHelper.isTelexyHostedProject(project)) {
-      botDir = this._telexyBotForwarderPath;
+      botDir = this._iSettings.telexyBotForwarderPath;
       const botName = this._projectHelper.getTelexyBotName(project);
-      commandAndArgs = `dotnet run --project TelexyBotForwarder.csproj --TxSettings:BotName ${botName} --TxSettings:ComposerUrl ${this._composerBaseUrl}`.split(
-        /\s+/
-      );
+      commandAndArgs = (
+        `dotnet run --project TelexyBotForwarder.csproj` +
+        ` --TxSettings:BotName ${botName}` +
+        ` --TxSettings:CloudUrl ${this._iSettings.cloudBaseUrl}` +
+        ` --TxSettings:BfcServerCatalog ${this._iSettings.bfcServerCatalog}`
+      ).split(/\s+/);
     }
 
     return new Promise((resolve, reject) => {
@@ -349,7 +351,7 @@ export class TxPublish implements PublishPlugin<PublishConfig> {
       }
       // take the 0th item off the array, leaving just the args
       this._composer.log('Starting bot on port %d. (%s)', port, commandAndArgs.join(' '));
-      const startCommand = commandAndArgs.shift();
+      const startCommand: string = commandAndArgs.shift() as string;
 
       let config: string[] = [];
       let skillHostEndpoint;
@@ -359,7 +361,7 @@ export class TxPublish implements PublishPlugin<PublishConfig> {
       }
       config = this.getConfig(settings, skillHostEndpoint);
       let spawnProcess: any;
-      const args = [...commandAndArgs, '--port', port, `--urls`, `http://0.0.0.0:${port}`, ...config];
+      const args = [...commandAndArgs, '--port', `${port}`, `--urls`, `http://0.0.0.0:${port}`, ...config];
       this._composer.log('Executing command with arguments: %s %s', startCommand, args.join(' '));
       try {
         spawnProcess = spawn(startCommand, args, {

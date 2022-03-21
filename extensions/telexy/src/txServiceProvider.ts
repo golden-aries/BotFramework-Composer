@@ -107,15 +107,7 @@ export async function initServices(botsFolder: string, registration: IExtensionR
   //   getProfier()
   // );
 
-  publish = new TxPublish(
-    registration,
-    getSettings().telexyBotForwarderPath,
-    getTxBotProjectEx(),
-    getSettings().composerBaseUrl,
-    getTxClient(),
-    getLogger(),
-    getProfiler()
-  );
+  publish = new TxPublish(registration, getTxBotProjectEx(), getSettings(), getTxClient(), getLogger(), getProfiler());
 
   //publish = new TxPublishLocalOriginal(registration, logger, profiler);
 
