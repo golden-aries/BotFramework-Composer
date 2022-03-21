@@ -5,7 +5,8 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc",
-    "watch": "yarn build --watch"
+    "watch": "yarn build --watch",
+    "customizeImage": "node ./lib/build/disableExtensions.js"
   },
   "composer": {
     "enabled": true

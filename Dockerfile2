@@ -1,8 +1,8 @@
 FROM microsoft_bfc:2.1.1 AS mbfc
-#WORKDIR /src/extensions/telexy
+# this wil add ping
+RUN apt-get install -y iputils-ping
 COPY ./extensions/telexy /app/extensions/telexy
-#RUN ["npm", "install", "-g", "typescript"]
-#RUN ["yarn", "install"]
-#COPY ./extensions/telexy/node_modules/@botframework-composer/ ./node_modules/@botframework-composer/
-#RUN ["yarn", "build"]
-ENTRYPOINT [ "/bin/bash" ]
+WORKDIR /app/extensions/telexy
+RUN ["yarn", "run", "customizeImage" ]
+WORKDIR /app/Composer
+CMD ["yarn","start:server"]

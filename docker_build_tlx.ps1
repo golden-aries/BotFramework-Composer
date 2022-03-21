@@ -1,1 +1,1 @@
-docker build --tag telexy_bfc --file Dockerfile2 .
+docker build --tag telexy_bfc:2.1.1 --file Dockerfile2 .
