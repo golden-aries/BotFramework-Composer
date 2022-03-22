@@ -75,7 +75,7 @@ export async function initServices(botsFolder: string, registration: IExtensionR
 
   //runtime = new TxRuntimeServiceOriginal(getLogger());
   runtime = new TxRuntimeService(
-    botsFolder,
+    getSettings(),
     getTxClient(),
     getTxPath(),
     new TxRuntimeServiceOriginal(getLogger()),
@@ -114,6 +114,8 @@ export async function initServices(botsFolder: string, registration: IExtensionR
   //signalrClient = await new SignalrClientFactory(serverInfo.uri, ['BotHub'], sessionCookie).getSignalrClient();
 
   logger.logTrace('Telexy Services Initialized');
+
+  logger.logTrace('Using settings: %o', getSettings());
 }
 
 function defaultSettings(): ISettings {

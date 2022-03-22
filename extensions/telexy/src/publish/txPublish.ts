@@ -65,6 +65,10 @@ const stringifyError = (error: any): string => {
 };
 
 export class TxPublish implements PublishPlugin<PublishConfig> {
+  toString(): string {
+    return 'TxPublish';
+  }
+
   public name = 'localpublish';
   public description = 'Publish bot to local runtime';
   static runningBots: { [key: string]: RunningBot } = {};
@@ -198,9 +202,10 @@ export class TxPublish implements PublishPlugin<PublishConfig> {
       }
 
       const runtime = this._composer.getRuntimeByProject(project);
+      this._logger.logTrace('%s is a runtime for bot %s', runtime, project.name);
       if (project.settings?.runtime.path && project.settings.runtime.command) {
         const runtimePath = project.getRuntimePath();
-        this._logger.logTrace('%s.publishAsync launch building %s, %s', this, botId, version);
+        this._logger.logTrace('%s.publishAsync launch building %s, %s, %s', this, botId, version, runtimePath);
         await runtime.build(runtimePath, project, fullSettings, port);
         this._profiler.loghrtime('TelexyPublisher build finished', botId, t);
       } else {
@@ -523,10 +528,6 @@ export class TxPublish implements PublishPlugin<PublishConfig> {
       delete TxPublish.runningBots[botId];
     }
   };
-
-  toString(): string {
-    return 'TxPublishLocal';
-  }
 }
 
 // stop all the runningBot when process exit

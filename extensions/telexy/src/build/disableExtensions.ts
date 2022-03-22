@@ -3,7 +3,7 @@ import path from 'path';
 const packageJson = 'package.json';
 
 const builtInExtDir = '/app/extensions';
-const extToDisable = ['localPublish'];
+const extToDisable = ['localPublish', 'runtimes'];
 
 for (const ext of extToDisable) {
   disableExtension(path.join(builtInExtDir, ext, packageJson));

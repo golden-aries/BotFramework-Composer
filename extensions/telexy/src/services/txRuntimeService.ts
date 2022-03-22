@@ -3,7 +3,7 @@ import { exec } from 'child_process';
 import { promises } from 'dns';
 import rimraf from 'rimraf';
 import { promisify } from 'util';
-import { ILogger } from '../common/interfaces';
+import { ILogger, ISettings } from '../common/interfaces';
 import { IRuntime } from '../common/iRuntime';
 import { ITxClient } from '../common/iTxClient';
 import { TxPath } from '../common/txPath';
@@ -12,11 +12,15 @@ import { BfcFileStorage } from '../runtimes/interface';
 
 /** @inheritdoc */
 export class TxRuntimeService implements IRuntime {
+  toString(): string {
+    return 'TxRuntimeService';
+  }
+
   key = 'adaptive-runtime-dotnet-webapp';
   name = 'C# - Web App';
 
   constructor(
-    private _botsFolder: string,
+    private _settings: ISettings,
     private _txClient: ITxClient,
     private _txPath: TxPath,
     private _originalRuntime: IRuntime | undefined,
@@ -34,9 +38,19 @@ export class TxRuntimeService implements IRuntime {
       project.id,
       project.name
     );
-    if (this._txPath.isChildOf(runtimePath, this._botsFolder)) {
+    if (this._txPath.isChildOf(runtimePath, this._settings.botsFolder)) {
+      this._logger.logTrace(
+        '%s.build Telexy hosted bot TelexyBotsFolder: $s, runtimePath: %s ',
+        runtimePath,
+        this._settings.botsFolder
+      );
       await this._txClient.setBotContent(project.name, runtimePath);
     } else if (this._originalRuntime) {
+      this._logger.logTrace(
+        '%s.build local bot TelexyBotsFolder: $s, runtimePath: %s ',
+        runtimePath,
+        this._settings.botsFolder
+      );
       await this._originalRuntime.build(runtimePath, project);
     } else {
       throw new Error(`Not impelmented for locations outside of a botFolder yet! ${this} ${this._buildName}`);
@@ -108,8 +122,4 @@ export class TxRuntimeService implements IRuntime {
 
   path = '';
   startCommand = '';
-
-  toString(): string {
-    return 'TxRuntimeService';
-  }
 }
