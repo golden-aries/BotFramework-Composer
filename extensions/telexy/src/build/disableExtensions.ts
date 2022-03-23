@@ -3,7 +3,17 @@ import path from 'path';
 const packageJson = 'package.json';
 
 const builtInExtDir = '/app/extensions';
-const extToDisable = ['localPublish', 'runtimes'];
+const extToDisable = [
+  'azurePublish',
+  'azurePublishNew',
+  'githubAuth',
+  'mockRemotePublish',
+  'localPublish',
+  'mongoStorage',
+  'pvaPublish',
+  'runtimes',
+  'sample-ui-plugin',
+];
 
 for (const ext of extToDisable) {
   disableExtension(path.join(builtInExtDir, ext, packageJson));

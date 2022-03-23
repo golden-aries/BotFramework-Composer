@@ -299,12 +299,14 @@ export class TxPublish implements PublishPlugin<PublishConfig> {
     return RuntimeLogServerOriginal.getRuntimeLogStreamingUrl(projectId);
   };
 
+  private _setBotName: string = 'setBot';
   // start bot in current version
-
   private setBot = async (botId: string, version: string, settings: any, project: IBotProject, port: number) => {
     // get port, and stop previous bot if exist
     try {
+      this._logger.logTrace('%s.%s bot %s %s', this, this._setBotName, project.name, botId);
       if (this._projectHelper.isTelexyHostedProject(project)) {
+        this._logger.logTrace('%s.%s bot %s %s is telexy hosted bot!', this, this._setBotName, project.name, botId);
         await this.startBot(botId, port, settings, project);
       } else {
         // if a port (e.g. --port 5000) is configured in the custom runtime command try to parse and set this port
@@ -329,9 +331,11 @@ export class TxPublish implements PublishPlugin<PublishConfig> {
     }
   };
 
-  private startBot = async (botId: string, port: number, settings: any, project: IBotProject): Promise<string> => {
-    let botDir = project.getRuntimePath();
+  private _startBotName: string = 'startBot';
 
+  private startBot = async (botId: string, port: number, settings: any, project: IBotProject): Promise<string> => {
+    this._logger.logTrace('%s.%s %s %s', this, this._startBotName, botId, project?.name);
+    let botDir = project.getRuntimePath();
     let commandAndArgs: string[] =
       settings.runtime?.customRuntime === true
         ? settings.runtime.command.split(/\s+/)
@@ -490,29 +494,31 @@ export class TxPublish implements PublishPlugin<PublishConfig> {
   // make it public, so that able to stop runtime before switch ejected runtime.
   public stopBot = async (botId: string): Promise<void> => {
     const runningBot = TxPublish.runningBots[botId];
-    if (runningBot.isTelexyHostedBot) {
-      await this._txClient.resetBot(runningBot.name!);
-    }
-    const proc = TxPublish.runningBots[botId]?.process;
-    const port = TxPublish.runningBots[botId]?.port;
-    if (port) {
-      this._composer.log('Killing process at port %d', port);
+    if (runningBot) {
+      if (runningBot.isTelexyHostedBot) {
+        await this._txClient.resetBot(runningBot.name!);
+      }
+      const proc = runningBot.process;
+      const port = runningBot.port;
+      if (port) {
+        this._composer.log('Killing process at port %d', port);
 
-      await new Promise((resolve, reject) => {
-        setTimeout(async () => {
-          killPort(port)
-            .then(() => {
-              if (proc) {
-                this.removeListener(proc);
-              }
-              delete TxPublish.runningBots[botId];
-              resolve('Stopped');
-            })
-            .catch((err: any) => {
-              reject(err);
-            });
-        }, 1000);
-      });
+        await new Promise((resolve, reject) => {
+          setTimeout(async () => {
+            killPort(port)
+              .then(() => {
+                if (proc) {
+                  this.removeListener(proc);
+                }
+                delete TxPublish.runningBots[botId];
+                resolve('Stopped');
+              })
+              .catch((err: any) => {
+                reject(err);
+              });
+          }, 1000);
+        });
+      }
     }
   };
 

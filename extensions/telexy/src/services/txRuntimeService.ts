@@ -31,7 +31,7 @@ export class TxRuntimeService implements IRuntime {
   /** @inheritdoc */
   build = async (runtimePath: string, project: IBotProject, fullSettings?: DialogSetting, port?: number) => {
     this._logger.logTrace(
-      '%s %s runtimePath: %s project %s %s',
+      'Starting %s.%s  runtimePath: %s project %s %s',
       this,
       this._buildName,
       runtimePath,
@@ -40,16 +40,20 @@ export class TxRuntimeService implements IRuntime {
     );
     if (this._txPath.isChildOf(runtimePath, this._settings.botsFolder)) {
       this._logger.logTrace(
-        '%s.build Telexy hosted bot TelexyBotsFolder: $s, runtimePath: %s ',
-        runtimePath,
-        this._settings.botsFolder
+        '%s.%s Telexy hosted bot TelexyBotsFolder: %s, runtimePath: %s ',
+        this,
+        this._buildName,
+        this._settings.botsFolder,
+        runtimePath
       );
       await this._txClient.setBotContent(project.name, runtimePath);
     } else if (this._originalRuntime) {
       this._logger.logTrace(
-        '%s.build local bot TelexyBotsFolder: $s, runtimePath: %s ',
-        runtimePath,
-        this._settings.botsFolder
+        '%s.%s local bot TelexyBotsFolder: %s, runtimePath: %s ',
+        this,
+        this._buildName,
+        this._settings.botsFolder,
+        runtimePath
       );
       await this._originalRuntime.build(runtimePath, project);
     } else {

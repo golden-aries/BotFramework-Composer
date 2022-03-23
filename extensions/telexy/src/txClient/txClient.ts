@@ -11,6 +11,10 @@ import { ITxServerInfo } from '../common/iTxServerInfo';
 import { SessionCookieExtractor } from './sessionCookieExtractor';
 import { TxClientRequestOptionsBuilder } from './txClientRequestOptionsBuilder';
 export class TxClient implements ITxClient {
+  toString(): string {
+    return 'TxClient';
+  }
+
   /**
    *
    */
@@ -52,23 +56,46 @@ export class TxClient implements ITxClient {
       .withBodyStream(stream);
   }
 
+  private _setBotContentName: string = 'setBotContent';
+
   /** @inheritdoc */
   setBotContent(name: string, dir: string): Promise<void> {
+    this._logger.logTrace('Starting %s.%s Bot: %s Dir: %s', this, this._setBotContentName, name, dir);
     const zip = archiver('zip', { zlib: { level: 9 } });
     return new Promise(async (resolve, reject) => {
       const url = this._setBotContentUrl(name);
       const stream = zip.directory(dir, false).on('error', (err) => reject(err));
-
-      const responesePromise = this._nodeFetch.fetch(
+      this._logger.logTrace(
+        '%s.%s Sending zipped directory %s content to %s ',
+        this,
+        this._setBotContentName,
+        dir,
+        url
+      );
+      const responsePromise = this._nodeFetch.fetch(
         url,
         this._setBotContentRequestOptionsBuilder(stream).buildNodeFetchRequestInit()
       );
       await zip.finalize();
+      this._logger.logTrace(
+        '%s.%s Directory %s content zipping finished for %s ',
+        this,
+        this._setBotContentName,
+        dir,
+        url
+      );
       try {
-        const resp = await responesePromise;
-        resp.status; // for debugging
+        const resp = await responsePromise;
+        this._logger.logTrace(
+          '%s.%s Server response %s for bot content at %s ',
+          this,
+          this._setBotContentName,
+          resp.status,
+          url
+        );
         resolve();
       } catch (err) {
+        this._logger.logTrace('%s.%s Failed to set bot content at %s!\n\r%s ', this, this._setBotContentName, url, err);
         reject(err);
       }
     });
