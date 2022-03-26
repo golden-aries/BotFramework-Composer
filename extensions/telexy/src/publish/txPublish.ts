@@ -21,6 +21,8 @@ import { RuntimeLogServerOriginal } from './txRuntimeLogServerOriginal';
 import { ILogger, IProfiler, ISettings } from '../common/interfaces';
 import { TxBotProjectEx } from '../common/txBotProjectEx';
 import { ITxClient } from '../common/iTxClient';
+import { pathExists, pathExistsSync } from 'fs-extra';
+import path from 'path';
 
 /** stores data about running bot */
 interface RunningBot {
@@ -332,7 +334,9 @@ export class TxPublish implements PublishPlugin<PublishConfig> {
   };
 
   private _startBotName: string = 'startBot';
-
+  private _forwarderProjectFile: string = 'TelexyBotForwarder.csproj';
+  private _forwarderDll: string = 'TelexyBotForwarder.dll';
+  /** starts bot */
   private startBot = async (botId: string, port: number, settings: any, project: IBotProject): Promise<string> => {
     this._logger.logTrace('%s.%s %s %s', this, this._startBotName, botId, project?.name);
     let botDir = project.getRuntimePath();
@@ -344,8 +348,13 @@ export class TxPublish implements PublishPlugin<PublishConfig> {
     if (this._projectHelper.isTelexyHostedProject(project)) {
       botDir = this._iSettings.telexyBotForwarderPath;
       const botName = this._projectHelper.getTelexyBotName(project);
+
+      const subCmd = pathExistsSync(path.join(botDir, this._forwarderProjectFile))
+        ? `run --project ${this._forwarderProjectFile}`
+        : `${this._forwarderDll}`;
+
       commandAndArgs = (
-        `dotnet run --project TelexyBotForwarder.csproj` +
+        `dotnet ${subCmd}` +
         ` --TxSettings:BotName ${botName}` +
         ` --TxSettings:CloudUrl ${this._iSettings.cloudBaseUrl}` +
         ` --TxSettings:BfcServerCatalog ${this._iSettings.bfcServerCatalog}`
