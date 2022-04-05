@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "customTemplateFeedUrl": "",
+  "storageConnections": [
+    {
+      "id": "default",
+      "name": "This PC",
+      "type": "LocalDisk",
+      "path": "",
+      "platform": "win32",
+      "defaultPath": "D:\\temp\\txbots"
+    }
+  ],
+  "recentBotProjects": [],
+  "projectLocationMap": {},
+  "featureFlags": {
+    "FORM_DIALOG": {
+      "displayName": "Form dialogs",
+      "description": "Automatically generate dialogs that collect information from a user to manage conversations.",
+      "documentationLink": "https://aka.ms/AAailpe",
+      "isHidden": false,
+      "enabled": false
+    },
+    "ADVANCED_TEMPLATE_OPTIONS": {
+      "displayName": "Advanced template options",
+      "description": "Enables creating bots from local templates as well as creating bots from older versions of published templates",
+      "documentationLink": "",
+      "isHidden": true,
+      "enabled": false
+    }
+  },
+  "settings": {
+    "telemetry": {}
+  }
+}

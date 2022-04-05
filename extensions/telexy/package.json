@@ -11,7 +11,11 @@
   "composer": {
     "enabled": true
   },
-  "main": "lib/txIndex.js",
+  "esbuild": {
+    "bundle": false,
+    "platform": "node"
+  },
+  "main": "lib/index.ts",
   "dependencies": {
     "archiver": "^5.0.2",
     "express": "^4.16.4",
@@ -22,7 +26,6 @@
     "lodash": "^4.17.21",
     "node-fetch": "2.6.6",
     "portfinder": "^1.0.28",
-    "rimraf": "^3.0.2",
     "signalr-client": "0.0.20",
     "sync-request": "^6.1.0",
     "tcp-port-used": "^1.0.2",
@@ -41,6 +44,11 @@
     "@types/tcp-port-used": "^1.0.0",
     "@types/uuid": "^8.3.1",
     "@types/ws": "^8.2.0",
+    "rimraf": "^3.0.2",
     "typescript": "^3.8.3"
+  },
+  "resolutions": {
+    "@botframework-composer/types": "file:../../Composer/packages/types",
+    "bl": "^4.0.3"
   }
 }
