@@ -25,7 +25,7 @@ ENV NODE_OPTIONS "--max-old-space-size=6114"
 ENV NODE_ENV "production"
 ENV COMPOSER_BUILTIN_EXTENSIONS_DIR "/src/extensions"
 RUN yarn build:prod $YARN_ARGS
-WORKDIR /src/Composer/extensions/telexy
+WORKDIR /src/extensions/telexy
 RUN yarn build
 
 # CI only
