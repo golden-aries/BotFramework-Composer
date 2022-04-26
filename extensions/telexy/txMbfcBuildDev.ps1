@@ -8,30 +8,50 @@ $fusion =[IO.Path]::GetFullPath($navPath)
 Write-Output "$scriptName FusionOne root is $fusion"
 
 # Build Telexy Forwarder image
-
-$forwarder = [IO.Path]::Combine($fusion,"Components", "Bot", "Telexy.Bot.Forwarder")
-Write-Output "$scriptName Building docker image of Telexy.Bot.Forwarder in $forwarder"
-Set-Location $forwarder
-# docker build --tag telexy_botforwarder .
-
-# Build Mbfc image
-$wsp = [IO.Path]::Combine($fusion, "BuildWorkspace" )
+$wsp = [IO.Path]::Combine($fusion, "BuildWorkspace")
+if ([IO.directory]::Exists($wsp)) {
+  Remove-Item $wsp -Recurse -Force
+}
 New-Item $wsp -ItemType "directory"
-Set-Location $wsp
+#Set-Location $wsp
 $mbfc = "Mbfc"
 $repo = "https://github.com/microsoft/BotFramework-Composer.git"
 $branch = "release/2.1.1"
 $mbfc = [IO.Path]::Combine($wsp, $mbfc)
 Write-Output "$scriptName Cloning Microsoft Bot Framework Composer into in $mbfc"
 git clone --branch $branch --depth 1 --single-branch --no-tags $repo $mbfc
-Set-Location $mbfc
-#docker build --tag microsoft_mbfc:2.1.1
 
-# Build Tbfc image
+# remove unused extensions
+$extToRemove = @(
+  'authTest'
+  'azurePublish',
+  'azurePublishNew',
+  'githubAuth',
+  'mockRemotePublish',
+  'localPublish',
+  'mongoStorage',
+  'pvaPublish',
+  'runtimes',
+  'sample-ui-plugin',
+  'samples',
+  'webroute'
+);
+Foreach($ext in $extToRemove)
+{
+    $extDir = [IO.Path]::Combine($mbfc, "extensions", $ext);
+    Remove-Item $extDir -Recurse
+}
 
-$srcDockerFile = [IO.Path]::Combine($scriptPath, "Dockerfile")
+$forwarder = [IO.Path]::Combine($fusion,"Components", "Bot", "Telexy.Bot.Forwarder")
+$forwarderProj = [IO.Path]::Combine($forwarder,"Telexy.Bot.Forwarder.csproj")
+$mbfcForwarder = [IO.Path]::Combine($mbfc, "forwarder")
+Write-Output "$scriptName Building $forwarderProj into $mbfcForwarder"
+#docker build --tag telexy_botforwarder:latest .
+dotnet publish -c Release --self-contained true -r linux-x64 -o "$mbfcForwarder" "$forwarderProj"
+
+$srcDockerFile = [IO.Path]::Combine($scriptPath, "Dockerfile.template")
 $dstDockerFile = [IO.Path]::Combine($mbfc, "Dockerfile")
-$srcDockerIgnore = [IO.Path]::Combine($scriptPath, ".dockerignore")
+$srcDockerIgnore = [IO.Path]::Combine($scriptPath, ".dockerignore.template")
 $dstDockerIgnore = [IO.Path]::Combine($mbfc, ".dockerignore")
 $srcExt = [IO.Path]::Combine($forwarder, "Mbfc", "Composer", "extensions", "telexy")
 $destExt = [IO.Path]::Combine($mbfc,"extensions","telexy")
@@ -41,5 +61,7 @@ Write-Output "$scriptName Overwriting $dstDockerIgnore with $srcDockerIgnore"
 Copy-Item $srcDockerIgnore $dstDockerIgnore -Force
 Write-Output "$scriptName Copying $srcExt into $destExt"
 Copy-Item $srcExt $destExt -Recurse
-#docker build --tag telexy_mbfc .
-Set-Location $scriptPath
+#Set-Location $mbfc
+docker build --tag telexy_bfc:latest $mbfc
+#Set-Location $scriptPath
+# end

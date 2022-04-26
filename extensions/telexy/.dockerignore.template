@@ -1,11 +1,11 @@
-#**/node_modules
-#**/package-lock.json
-#**/dist
-#**/build
-#**/server/data.json
-#**/server/tmp.zip
-# not ignore all lib folder because packages/lib, so probably we should rename that to libs
-#packages/lib/*/lib
+**/node_modules
+**/package-lock.json
+**/dist
+**/build
+**/server/data.json
+**/server/tmp.zip
+#not ignore all lib folder because packages/lib, so probably we should rename that to libs
+packages/lib/*/lib
 
 Dockerfile
 .dockerignore

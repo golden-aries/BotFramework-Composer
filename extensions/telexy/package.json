@@ -15,7 +15,7 @@
     "bundle": false,
     "platform": "node"
   },
-  "main": "lib/index.ts",
+  "main": "lib/index.js",
   "dependencies": {
     "archiver": "^5.0.2",
     "express": "^4.16.4",
