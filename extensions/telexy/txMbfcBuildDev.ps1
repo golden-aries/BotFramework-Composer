@@ -2,19 +2,16 @@ $ErrorActionPreference = "Stop"
 $scriptPath = Split-Path $script:MyInvocation.MyCommand.Path -Parent
 $scriptName = Split-Path $script:MyInvocation.MyCommand.Path -Leaf
 Write-Output "$scriptName starting in $scriptPath"
-# Build Telexy Forwarder image
 $navPath = [IO.Path]::Combine($scriptPath,"..","..","..","..","..","..","..")
 #$navPath = [IO.Path]::Combine($scriptPath,"..","..","..","..")
 $fusion =[IO.Path]::GetFullPath($navPath)
 Write-Output "$scriptName FusionOne root is $fusion"
-
-# Build Telexy Forwarder image
 $wsp = [IO.Path]::Combine($fusion, "BuildWorkspace")
 if ([IO.directory]::Exists($wsp)) {
   Remove-Item $wsp -Recurse -Force
 }
 New-Item $wsp -ItemType "directory"
-#Set-Location $wsp
+
 $mbfc = "Mbfc"
 $repo = "https://github.com/microsoft/BotFramework-Composer.git"
 $branch = "release/2.1.1"
@@ -62,7 +59,4 @@ Write-Output "$scriptName Overwriting $dstDockerIgnore with $srcDockerIgnore"
 Copy-Item $srcDockerIgnore $dstDockerIgnore -Force
 Write-Output "$scriptName Copying $srcExt into $destExt"
 Copy-Item $srcExt $destExt -Recurse
-#Set-Location $mbfc
 docker build --tag telexy_bfc:latest $mbfc
-#Set-Location $scriptPath
-# end
