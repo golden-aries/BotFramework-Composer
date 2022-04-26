@@ -47,9 +47,9 @@ Write-Output "$scriptName Building $forwarderProj into $mbfcForwarder"
 #docker build --tag telexy_botforwarder:latest .
 dotnet publish -c Release --self-contained true -r linux-x64 -o "$mbfcForwarder" "$forwarderProj"
 
-$srcDockerFile = [IO.Path]::Combine($scriptPath, "Dockerfile.template")
+$srcDockerFile = [IO.Path]::Combine($forwarder,"Mbfc", "Composer", "extensions", "telexy", "Dockerfile.template")
 $dstDockerFile = [IO.Path]::Combine($mbfc, "Dockerfile")
-$srcDockerIgnore = [IO.Path]::Combine($scriptPath, ".dockerignore.template")
+$srcDockerIgnore = [IO.Path]::Combine($forwarder, "Mbfc", "Composer", "extensions", "telexy", ".dockerignore.template")
 $dstDockerIgnore = [IO.Path]::Combine($mbfc, ".dockerignore")
 $srcExt = [IO.Path]::Combine($forwarder, "Mbfc", "Composer", "extensions", "telexy")
 $destExt = [IO.Path]::Combine($mbfc,"extensions","telexy")
