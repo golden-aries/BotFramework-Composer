@@ -4,6 +4,7 @@ $scriptName = Split-Path $script:MyInvocation.MyCommand.Path -Leaf
 Write-Output "$scriptName starting in $scriptPath"
 # Build Telexy Forwarder image
 $navPath = [IO.Path]::Combine($scriptPath,"..","..","..","..","..","..","..")
+#$navPath = [IO.Path]::Combine($scriptPath,"..","..","..","..")
 $fusion =[IO.Path]::GetFullPath($navPath)
 Write-Output "$scriptName FusionOne root is $fusion"
 
