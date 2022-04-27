@@ -1,13 +1,18 @@
 $ErrorActionPreference = "Stop"
+$InformationPreference = "Continue"
 $scriptPath = Split-Path $script:MyInvocation.MyCommand.Path -Parent
 $scriptName = Split-Path $script:MyInvocation.MyCommand.Path -Leaf
 Write-Output "$scriptName starting in $scriptPath"
 $navPath = [IO.Path]::Combine($scriptPath,"..","..","..","..","..","..","..")
 #$navPath = [IO.Path]::Combine($scriptPath,"..","..","..","..")
 $fusion =[IO.Path]::GetFullPath($navPath)
+if (!$fusion.EndsWith("Fusion.One")) {
+  Write-Error("Wrong FusonOne root! $fusion")
+}
 Write-Output "$scriptName FusionOne root is $fusion"
 $wsp = [IO.Path]::Combine($fusion, "BuildWorkspace")
 if ([IO.directory]::Exists($wsp)) {
+  Write-Information "Cleaning workspace. $wsp"
   Remove-Item $wsp -Recurse -Force
 }
 New-Item $wsp -ItemType "directory"
@@ -37,7 +42,8 @@ $extToRemove = @(
 Foreach($ext in $extToRemove)
 {
     $extDir = [IO.Path]::Combine($mbfc, "extensions", $ext);
-    Remove-Item $extDir -Recurse
+    Write-Information "Removing unused MBFC extension: $extDir"
+    Remove-Item $extDir -Recurse -Force
 }
 
 $forwarder = [IO.Path]::Combine($fusion,"Components", "Bot", "Telexy.Bot.Forwarder")
