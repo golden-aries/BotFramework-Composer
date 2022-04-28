@@ -37,7 +37,7 @@ $extToRemove = @(
   'runtimes',
   'sample-ui-plugin',
   'samples',
-  'webroute'
+  'webRoute'
 );
 Foreach($ext in $extToRemove)
 {
