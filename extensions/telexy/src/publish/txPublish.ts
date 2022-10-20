@@ -339,13 +339,14 @@ export class TxPublish implements PublishPlugin<PublishConfig> {
   /** starts bot */
   private startBot = async (botId: string, port: number, settings: any, project: IBotProject): Promise<string> => {
     this._logger.logTrace('%s.%s %s %s', this, this._startBotName, botId, project?.name);
-    let botDir = project.getRuntimePath();
+
     let commandAndArgs: string[] =
       settings.runtime?.customRuntime === true
         ? settings.runtime.command.split(/\s+/)
         : this._composer.getRuntimeByProject(project).startCommand.split(/\s+/);
-
-    if (this._projectHelper.isTelexyHostedProject(project)) {
+    let botDir = project.getRuntimePath();
+    const isTx: boolean = this._projectHelper.isTelexyHostedProject(project);
+    if (isTx) {
       botDir = this._iSettings.telexyBotForwarderPath;
       const botName = this._projectHelper.getTelexyBotName(project);
 
@@ -368,7 +369,18 @@ export class TxPublish implements PublishPlugin<PublishConfig> {
         return;
       }
       // take the 0th item off the array, leaving just the args
-      this._composer.log('Starting bot on port %d. (%s)', port, commandAndArgs.join(' '));
+      if (isTx) {
+        this._logger.logTrace(
+          '%s.%s Starting telexy bot forwarder on port %d. cwd: %s (%s)',
+          this,
+          this._startBotName,
+          port,
+          botDir,
+          commandAndArgs.join(' ')
+        );
+      } else {
+        this._composer.log('Starting bot on port %d. (%s)', port, commandAndArgs.join(' '));
+      }
       const startCommand: string = commandAndArgs.shift() as string;
 
       let config: string[] = [];
