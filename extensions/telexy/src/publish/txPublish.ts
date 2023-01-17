@@ -334,8 +334,8 @@ export class TxPublish implements PublishPlugin<PublishConfig> {
   };
 
   private _startBotName: string = 'startBot';
-  private _forwarderProjectFile: string = 'TelexyBotForwarder.csproj';
-  private _forwarderDll: string = 'TelexyBotForwarder.dll';
+  private _forwarderProjectFile: string = 'Telexy.Bot.Forwarder.csproj';
+  private _forwarderDll: string = 'Telexy.Bot.Forwarder.dll';
   /** starts bot */
   private startBot = async (botId: string, port: number, settings: any, project: IBotProject): Promise<string> => {
     this._logger.logTrace('%s.%s %s %s', this, this._startBotName, botId, project?.name);
