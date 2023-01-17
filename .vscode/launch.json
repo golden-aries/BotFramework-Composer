@@ -54,7 +54,7 @@
       "program": "${workspaceFolder}/Composer/packages/server/build/init.js",
       "env": {
         "DEBUG": "composer*",
-        "COMPOSER_BOTS_FOLDER" : "D:\\temp\\txbots",
+        "COMPOSER_BOTS_FOLDER": "D:\\temp\\txbots",
         "PORT": "5050"
       },
       "restart": true,
@@ -74,7 +74,7 @@
       "program": "${workspaceFolder}/Composer/packages/server/build/init.js",
       "env": {
         "DEBUG": "composer*",
-        "COMPOSER_BOTS_FOLDER" : "/"
+        "COMPOSER_BOTS_FOLDER": "/"
       },
       "restart": true,
       "outFiles": [
@@ -93,8 +93,14 @@
       "name": "Jest Debug",
       "program": "${workspaceRoot}/Composer/node_modules/jest/bin/jest",
       "stopOnEntry": false,
-      "args": ["--runInBand", "--env=jsdom", "--config=jest.config.js"],
-      "runtimeArgs": ["--inspect-brk"],
+      "args": [
+        "--runInBand",
+        "--env=jsdom",
+        "--config=jest.config.js"
+      ],
+      "runtimeArgs": [
+        "--inspect-brk"
+      ],
       "cwd": "${workspaceRoot}/Composer/packages/server",
       "sourceMaps": true,
       "console": "integratedTerminal"
@@ -107,7 +113,9 @@
       "windows": {
         "runtimeExecutable": "${workspaceRoot}/Composer/node_modules/.bin/electron.cmd"
       },
-      "args": ["${workspaceRoot}/Composer/packages/electron-server"],
+      "args": [
+        "${workspaceRoot}/Composer/packages/electron-server"
+      ],
       "env": {
         "NODE_ENV": "development",
         "DEBUG": "composer*",
@@ -132,10 +140,32 @@
         "${workspaceRoot}/Composer/node_modules/jest/bin/jest",
         "--runInBand"
       ],
-      "args": ["${fileBasename}"],
+      "args": [
+        "${fileBasename}"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "port": 9229
-    }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "TxDevContainer_Server: Launch",
+      "program": "/src/tmbfc/Composer/packages/server/build/init.js",
+      "env": {
+        "DEBUG": "composer*",
+        "COMPOSER_BOTS_FOLDER": "/Bots/TxBots",
+        "PORT": "5050"
+      },
+      "restart": true,
+      "outFiles": [
+        "/src/tmbfc/Composer/packages/server/build/**/*.js",
+        "/src/tmbfc/extensions/**/*.js"
+      ],
+      "sourceMaps": true,
+      //"preLaunchTask": "server: build",
+      "outputCapture": "std",
+      "cwd": "/src/tmbfc/Composer/packages/server"
+    },
   ]
 }

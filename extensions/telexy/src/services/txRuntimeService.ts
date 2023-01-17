@@ -57,7 +57,7 @@ export class TxRuntimeService implements IRuntime {
       );
       await this._originalRuntime.build(runtimePath, project);
     } else {
-      throw new Error(`Not impelmented for locations outside of a botFolder yet! ${this} ${this._buildName}`);
+      throw new Error(`Not implemented for locations outside of a botFolder yet! ${this} ${this._buildName}`);
     }
   };
 
