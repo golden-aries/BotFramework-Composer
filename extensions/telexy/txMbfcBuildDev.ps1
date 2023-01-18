@@ -1,3 +1,4 @@
+Set-StrictMode -Version 3.0
 $ErrorActionPreference = "Stop"
 $InformationPreference = "Continue"
 $scriptPath = Split-Path $script:MyInvocation.MyCommand.Path -Parent
@@ -10,8 +11,9 @@ if (!$fusion.EndsWith("Fusion.One")) {
   Write-Error("Wrong FusonOne root! $fusion")
 }
 Write-Output "$scriptName FusionOne root is $fusion"
+if (![IO.Directory]::Exists($fusion)) { Write-Error "Directory does not exists! $fusion"}
 $wsp = [IO.Path]::Combine($fusion, "BuildWorkspace")
-if ([IO.directory]::Exists($wsp)) {
+if ([IO.Directory]::Exists($wsp)) {
   Write-Information "Cleaning workspace. $wsp"
   Remove-Item $wsp -Recurse -Force
 }
@@ -49,7 +51,9 @@ Foreach($ext in $extToRemove)
 $forwarder = [IO.Path]::Combine($fusion,"Components", "Bot", "Telexy.Bot.Forwarder")
 $forwarderProj = [IO.Path]::Combine($forwarder,"Telexy.Bot.Forwarder.csproj")
 $mbfcForwarder = [IO.Path]::Combine($mbfc, "forwarder")
+# $nugetConfig = [IO.Path]::GetFullPath("$scriptPath/nuget.config")
 Write-Output "$scriptName Building $forwarderProj into $mbfcForwarder"
+
 #docker build --tag telexy_botforwarder:latest .
 dotnet publish -c Release --self-contained true -r linux-x64 -o "$mbfcForwarder" "$forwarderProj"
 

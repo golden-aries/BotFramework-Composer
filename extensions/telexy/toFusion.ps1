@@ -16,7 +16,7 @@ while ($choice -notmatch "[y|n]") {
 
 if ($choice -eq "y") {
     Write-Host "Yes! Starting " -ForegroundColor Green
-    robocopy $src $dest /mir /v /xo /xd .git node_modules out obj bin lib .vs /xf *.cmd *.vsix yarn-error.log /x
+    robocopy $src $dest /mir /v /xo /xd .git node_modules out dist obj bin lib .vs /xf *.cmd *.vsix yarn-error.log /x
 } else {
     Write-Host "No is selected!" -ForegroundColor DarkCyan
 }
