@@ -1,10 +1,13 @@
+Set-StrictMode -Version 3.0
 $ErrorActionPreference = "Stop"
-$fusion = $env:tlxFusion
+$fusion = $env:wsp2
 if ([string]::IsNullOrWhiteSpace($fusion)) {
-    Write-Error "Environment is not set! tlxFusion"
+    Write-Error "Environment is not set! wsp2"
 }
-$dest = [IO.Path]::Combine($fusion,"Components","Bot","Telexy.Bot.Forwarder", "Mbfc", "Composer", "extensions", "telexy")
-$src = Split-Path $script:MyInvocation.MyCommand.Path -Parent
+$dest = [IO.Path]::GetFullPath("$fusion/Fusion.One/Components/Bot/Telexy.Bot.Forwarder/Mbfc/Composer/extensions/telexy")
+$di = New-Object -TypeName "System.IO.DirectoryInfo" -ArgumentList $dest
+if (-not $di.Exists) { Write-Error "Directory does not exists! $dest"}
+$src = $PSScriptRoot
 $choice = ""
 
 while ($choice -notmatch "[y|n]") {
