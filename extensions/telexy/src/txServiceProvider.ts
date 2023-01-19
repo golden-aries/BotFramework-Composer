@@ -123,7 +123,10 @@ function defaultSettings(): ISettings {
     cloudBaseUrl: 'http://localhost:5102',
     apiKey: '',
     logLevel: LogLevel.Warning,
-    botsFolder: os.homedir(),
+
+    // the same setting is hardcoded in a Telexy.Cloud.Bot\Parameters\BotComposer.cs
+    botsFolder: '/Bots/TxBots', // they should match, otherwise Bot Composer Integration will break
+
     performanceProfiling: false,
     bfcServerCatalog: 'bfcServerCatalog.json',
     telexyBotForwarderPath: 'D:\\src\\telexy\\TelexyBotForwarder',
