@@ -1,6 +1,5 @@
 import { IExtensionRegistration } from '@botframework-composer/types';
 import path from 'path';
-import initRuntimes from './runtimes/txRuntimesOriginal';
 import { TxLocalStorage } from './storage/txLocalStorage';
 import { getPublisher, getRuntime, initServices } from './txServiceProvider';
 

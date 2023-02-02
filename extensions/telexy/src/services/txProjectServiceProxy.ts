@@ -1,7 +1,8 @@
-import { BotProjectService } from '../../../../Composer/packages/server/build/services/project';
-import { LocationRef } from '../../../../Composer/packages/server/build/models/bot/interface';
 import { UserIdentity } from '@botframework-composer/types';
 import { Request as ExpressRequest } from 'express';
+import { BotProject } from '../../../../Composer/packages/server/build/models/bot/botProject';
+import { LocationRef } from '../../../../Composer/packages/server/build/models/bot/interface';
+import { BotProjectService } from '../../../../Composer/packages/server/build/services/project';
 import { IBotProjectService } from '../common/iBotProjectService';
 import { ILogger, IProfiler } from '../common/interfaces';
 
@@ -15,6 +16,11 @@ export class TxProjectServiceProxy implements IBotProjectService {
   ) => Promise<string>;
 
   protected _originalCreateProjectAsync: (req: ExpressRequest, jobId: string) => Promise<void>;
+  protected _originalGetProjectById: (projectId: string, user?: UserIdentity | undefined) => Promise<BotProject>;
+  protected _originalGetProjectByAlias: (
+    alias: string,
+    user?: UserIdentity | undefined
+  ) => Promise<BotProject | undefined>;
 
   /**
    *
@@ -28,6 +34,8 @@ export class TxProjectServiceProxy implements IBotProjectService {
     }
     this._originalOpenProject = BotProjectService.openProject;
     this._originalCreateProjectAsync = BotProjectService.createProjectAsync;
+    this._originalGetProjectById = BotProjectService.getProjectById;
+    this._originalGetProjectByAlias = BotProjectService.getProjectByAlias;
     BotProjectService.openProject = this.openProject;
     BotProjectService.createProjectAsync = this.createProjectAsync;
     this.logger.logTrace('%s created!', this);
@@ -66,6 +74,32 @@ export class TxProjectServiceProxy implements IBotProjectService {
       this.profiler.loghrtime(this._createProjectMsg0, jobId, t);
     } catch (err) {
       this.logger.logError(this._createProjectMsg1, this, err);
+      throw err;
+    }
+  };
+
+  private _getProjectByIdMsg0: string = `${this}.getProjectById`;
+  private _getProjectByIdMsg1: string = `${this._getProjectByIdMsg0}  %s`;
+  getProjectById: (projectId: string, user?: UserIdentity) => Promise<BotProject> = async (projectId, user?) => {
+    try {
+      this.logger.logTrace(this._getProjectByIdMsg1, this, projectId);
+      const result = await this._originalGetProjectById(projectId, user);
+      return result;
+    } catch (err) {
+      this.logger.logError(this._getProjectByIdMsg1, this, err);
+      throw err;
+    }
+  };
+
+  private _getProjectByAliasMsg0: string = `${this}.getProjectByAlias`;
+  private _getProjectByAliasMsg1: string = `${this._getProjectByAliasMsg0}  %s`;
+  getProjectByAlias: (alias: string, user?: UserIdentity) => Promise<BotProject | undefined> = async (alias, user) => {
+    try {
+      this.logger.logTrace(this._getProjectByAliasMsg1, this, alias);
+      const result = await this._originalGetProjectByAlias(alias, user);
+      return result;
+    } catch (err) {
+      this.logger.logError(this._getProjectByAliasMsg1, this, err);
       throw err;
     }
   };
