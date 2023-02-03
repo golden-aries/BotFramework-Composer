@@ -5,6 +5,8 @@ import { LocationRef } from '../../../../Composer/packages/server/build/models/b
 import { BotProjectService } from '../../../../Composer/packages/server/build/services/project';
 import { IBotProjectService } from '../common/iBotProjectService';
 import { ILogger, IProfiler } from '../common/interfaces';
+import { TxBotProjectProxy } from '../models/bot/txBotProjectProxy';
+import { TxClient } from '../txClient/txClient';
 
 /** Takes over original project service by replacing it's function properties  */
 export class TxProjectServiceProxy implements IBotProjectService {
@@ -38,6 +40,8 @@ export class TxProjectServiceProxy implements IBotProjectService {
     this._originalGetProjectByAlias = BotProjectService.getProjectByAlias;
     BotProjectService.openProject = this.openProject;
     BotProjectService.createProjectAsync = this.createProjectAsync;
+    BotProjectService.getProjectById = this.getProjectById;
+    BotProjectService.getProjectByAlias = this.getProjectByAlias;
     this.logger.logTrace('%s created!', this);
   }
 
@@ -62,8 +66,8 @@ export class TxProjectServiceProxy implements IBotProjectService {
     }
   };
 
-  private _createProjectMsg0: string = `${this}.createProjectAsync`;
-  private _createProjectMsg1: string = `${this._createProjectMsg0}  %s`;
+  protected _createProjectMsg0: string = `${this}.createProjectAsync`;
+  protected _createProjectMsg1: string = `${this._createProjectMsg0}  %s`;
 
   createProjectAsync: (req: ExpressRequest, jobId: string) => Promise<void> = async (req, jobId) => {
     // making it an arrow function because it can be called without "this" context
@@ -78,8 +82,8 @@ export class TxProjectServiceProxy implements IBotProjectService {
     }
   };
 
-  private _getProjectByIdMsg0: string = `${this}.getProjectById`;
-  private _getProjectByIdMsg1: string = `${this._getProjectByIdMsg0}  %s`;
+  protected _getProjectByIdMsg0: string = `${this}.getProjectById`;
+  protected _getProjectByIdMsg1: string = `${this._getProjectByIdMsg0}  %s`;
   getProjectById: (projectId: string, user?: UserIdentity) => Promise<BotProject> = async (projectId, user?) => {
     try {
       this.logger.logTrace(this._getProjectByIdMsg1, this, projectId);
@@ -91,8 +95,8 @@ export class TxProjectServiceProxy implements IBotProjectService {
     }
   };
 
-  private _getProjectByAliasMsg0: string = `${this}.getProjectByAlias`;
-  private _getProjectByAliasMsg1: string = `${this._getProjectByAliasMsg0}  %s`;
+  protected _getProjectByAliasMsg0: string = `${this}.getProjectByAlias`;
+  protected _getProjectByAliasMsg1: string = `${this._getProjectByAliasMsg0}  %s`;
   getProjectByAlias: (alias: string, user?: UserIdentity) => Promise<BotProject | undefined> = async (alias, user) => {
     try {
       this.logger.logTrace(this._getProjectByAliasMsg1, this, alias);

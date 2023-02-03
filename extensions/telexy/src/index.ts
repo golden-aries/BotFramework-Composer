@@ -1,5 +1,6 @@
 import { IExtensionRegistration } from '@botframework-composer/types';
 import path from 'path';
+import { TxBotProjectProxy } from './models/bot/txBotProjectProxy';
 import { TxLocalStorage } from './storage/txLocalStorage';
 import { getPublisher, getRuntime, initServices } from './txServiceProvider';
 

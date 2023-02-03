@@ -11,6 +11,8 @@ import { TxPath } from '../common/txPath';
 import { TxProjectServiceProxy } from './txProjectServiceProxy';
 import unzip from 'extract-zip';
 import os from 'os';
+import { BotProject } from '../../../../Composer/packages/server/build/models/bot/botProject';
+import { TxBotProjectProxy } from '../models/bot/txBotProjectProxy';
 export class TxProjectService extends TxProjectServiceProxy {
   /**
    *
@@ -25,6 +27,8 @@ export class TxProjectService extends TxProjectServiceProxy {
   ) {
     super(logger, profiler);
     BotProjectService.openProject = this.openProject;
+    BotProjectService.getProjectById = this.getProjectById;
+    BotProjectService.getProjectByAlias = this.getProjectByAlias;
   }
 
   openProject: (
@@ -76,6 +80,39 @@ export class TxProjectService extends TxProjectServiceProxy {
       throw err;
     }
   };
+
+  getProjectById: (projectId: string, user?: UserIdentity) => Promise<BotProject> = async (projectId, user?) => {
+    try {
+      this.logger.logTrace(this._getProjectByIdMsg1, this, projectId);
+      const result = await this._originalGetProjectById(projectId, user);
+      this.tranformResult(result);
+      return result;
+    } catch (err) {
+      this.logger.logError(this._getProjectByIdMsg1, this, err);
+      throw err;
+    }
+  };
+
+  getProjectByAlias: (alias: string, user?: UserIdentity) => Promise<BotProject | undefined> = async (alias, user) => {
+    try {
+      this.logger.logTrace(this._getProjectByAliasMsg1, this, alias);
+      const result = await this._originalGetProjectByAlias(alias, user);
+      if (result) {
+        this.tranformResult(result);
+      }
+      return result;
+    } catch (err) {
+      this.logger.logError(this._getProjectByAliasMsg1, this, err);
+      throw err;
+    }
+  };
+
+  tranformResult(result: BotProject) {
+    const proxy = (<any>result)['txBotProjectProxy'];
+    if (!proxy) {
+      (<any>result)['txBotProjectProxy'] = new TxBotProjectProxy(result, this._txClient);
+    }
+  }
 
   toString(): string {
     return 'TxProjectService';
