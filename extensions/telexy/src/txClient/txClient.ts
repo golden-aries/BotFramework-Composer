@@ -1,7 +1,9 @@
+import { ILuisConfig } from '@botframework-composer/types';
 import archiver from 'archiver';
 import fs from 'fs/promises';
+import { reject } from 'lodash';
 import os from 'os';
-import path from 'path';
+import path, { resolve } from 'path';
 import { IFetch } from '../common/iFetch';
 import { IBlobFolderContentRaw } from '../common/iFileSystemContentInterfaces';
 import { INodeFetch } from '../common/iNodeFetch';
@@ -10,6 +12,7 @@ import { ITxClient } from '../common/iTxClient';
 import { ITxServerInfo } from '../common/iTxServerInfo';
 import { SessionCookieExtractor } from './sessionCookieExtractor';
 import { TxClientRequestOptionsBuilder } from './txClientRequestOptionsBuilder';
+
 export class TxClient implements ITxClient {
   toString(): string {
     return 'TxClient';
@@ -37,6 +40,37 @@ export class TxClient implements ITxClient {
     }
     if (!_profiler) {
       throw new Error('Constructor argument "profiler" is falsy');
+    }
+  }
+
+  /**
+   * constructs a url for a getBotLuisConfig request
+   * @param name bot's name
+   * */
+  private _getBotLuisConfigUrl(name: string): string {
+    return this._getApiTargetUrl('BotProviderBfcApi', 'getBotLuisConfig', { name: name });
+  }
+
+  /** create options builder for getLuisConfig requeset*/
+  private _getBotLuisConfigOptionsBuilder(): TxClientRequestOptionsBuilder {
+    return new TxClientRequestOptionsBuilder(this._sessionCookie).withHeader_Accept_ApplicationJson();
+  }
+
+  /** @inheritdoc */
+  async getBotLuisConfig(name: string): Promise<ILuisConfig> {
+    try {
+      const url = this._getBotLuisConfigUrl(name);
+      this._logger.logTrace('%s.%s for bot %s ', this, 'getBotLuisConfig', name);
+      const responsePromise = this._nodeFetch.fetch(
+        url,
+        this._getBotLuisConfigOptionsBuilder().buildNodeFetchRequestInit()
+      );
+      const response = await responsePromise;
+      const json = await response.text();
+      const result = <ILuisConfig>JSON.parse(json);
+      return result;
+    } catch (err) {
+      throw err;
     }
   }
 

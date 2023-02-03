@@ -23,6 +23,8 @@ export class TxBotProjectProxy {
 
   public newBuildFiles: (buildConfig: IBuildConfig) => Promise<void> = async (buildConfig: IBuildConfig) => {
     try {
+      const luisConfig = await this._txClient.getBotLuisConfig(this.project.name);
+      buildConfig.luisConfig = { ...buildConfig.luisConfig, ...luisConfig };
       await this._originalBuildFiles(buildConfig);
     } catch (err) {
       throw err;

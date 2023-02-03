@@ -1,3 +1,4 @@
+import { ILuisConfig } from '@botframework-composer/types';
 import { IBlobFolderContentRaw } from './iFileSystemContentInterfaces';
 
 export interface ITxClient {
@@ -7,6 +8,12 @@ export interface ITxClient {
    * @returns the name of a temporary file
    *  */
   getBotContent(name: string): Promise<string>;
+
+  /**
+   * * @param name bot's name
+   * @returns ILuisConfig objet
+   */
+  getBotLuisConfig(name: string): Promise<ILuisConfig>;
 
   /**
    * sends zipped content of a bot to a backend
