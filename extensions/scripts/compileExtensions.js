@@ -24,6 +24,13 @@ if (FORCE) {
 }
 
 const ignoredDirs = ['scripts', 'node_modules'];
+if (!!process.env.COMPOSER_INGORE_EXTENSIONS_DIRS) {
+  ignoredDirs = JSON.parse(process.env.COMPOSER_INGORE_EXTENSIONS_DIRS)
+  if (!Array.isArray(ignoredDirs)) {
+    throw "COMPOSER_INGORE_EXTENSIONS_DIRS evn var is not a json array!"
+  }
+}
+
 const allExtensions = fs
   .readdirSync(extensionsDir, { withFileTypes: true })
   .filter((ent) => !ignoredDirs.includes(ent.name));

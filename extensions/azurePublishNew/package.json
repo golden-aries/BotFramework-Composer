@@ -13,7 +13,7 @@
     "testEnvironment": "node"
   },
   "composer": {
-    "enabled": true,
+    "enabled": false,
     "bundles": [
       {
         "id": "azurePublishNew",
