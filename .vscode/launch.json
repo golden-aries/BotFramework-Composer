@@ -168,5 +168,25 @@
       "outputCapture": "std",
       "cwd": "/src/tmbfc/Composer/packages/server"
     },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "TxDevContainer_Server_bfc: Launch",
+      "program": "/src/bfc/Composer/packages/server/build/init.js",
+      "env": {
+        "DEBUG": "composer*",
+        "COMPOSER_BOTS_FOLDER": "/Bots/TxBots",
+        "PORT": "5051"
+      },
+      "restart": true,
+      "outFiles": [
+        "/src/bfc/Composer/packages/server/build/**/*.js",
+        "/src/bfc/extensions/**/*.js"
+      ],
+      "sourceMaps": true,
+      //"preLaunchTask": "server: build",
+      "outputCapture": "std",
+      "cwd": "/src/bfc/Composer/packages/server"
+    },
   ]
 }

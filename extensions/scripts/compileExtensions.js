@@ -23,11 +23,11 @@ if (FORCE) {
   console.log('--force is true. Forcing a rebuild of all extensions.');
 }
 
-const ignoredDirs = ['scripts', 'node_modules'];
+let ignoredDirs = ['scripts', 'node_modules'];
 if (!!process.env.COMPOSER_INGORE_EXTENSIONS_DIRS) {
-  ignoredDirs = JSON.parse(process.env.COMPOSER_INGORE_EXTENSIONS_DIRS)
+  ignoredDirs = JSON.parse(process.env.COMPOSER_INGORE_EXTENSIONS_DIRS);
   if (!Array.isArray(ignoredDirs)) {
-    throw "COMPOSER_INGORE_EXTENSIONS_DIRS evn var is not a json array!"
+    throw 'COMPOSER_INGORE_EXTENSIONS_DIRS evn var is not a json array!';
   }
 }
 
