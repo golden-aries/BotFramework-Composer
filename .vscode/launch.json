@@ -174,14 +174,15 @@
       "name": "TxDevContainer_Server_bfc: Launch",
       "program": "/src/bfc/Composer/packages/server/build/init.js",
       "env": {
-        "DEBUG": "composer*",
-        "COMPOSER_BOTS_FOLDER": "/Bots/TxBots",
-        "PORT": "5051"
+        // setting all env vars in compose.yaml
+        //"DEBUG": "composer*",
+        //"COMPOSER_BOTS_FOLDER": "/Bots/TxBots",
+        //"PORT": "5051"
       },
       "restart": true,
       "outFiles": [
         "/src/bfc/Composer/packages/server/build/**/*.js",
-        "/src/bfc/extensions/**/*.js"
+        "/src/bfc/extensions/telexy/dist/**/*.js"
       ],
       "sourceMaps": true,
       //"preLaunchTask": "server: build",
