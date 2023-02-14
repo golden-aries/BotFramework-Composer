@@ -8,7 +8,7 @@
 ################
 FROM  mcr.microsoft.com/dotnet/core/sdk:6.0 as base
 RUN apt update \
-    && apt -y install curl dirmngr apt-transport-https lsb-release ca-certificates iputils-ping mc netcat procps lsof findutils mawk grep \
+    && apt -y install curl dirmngr apt-transport-https lsb-release ca-certificates iputils-ping mc netcat procps lsof findutils mawk grep openssh-client \
     && curl -sL https://deb.nodesource.com/setup_14.x | bash - \
     && apt install -y nodejs libgomp1 \
     && npm install -g yarn
