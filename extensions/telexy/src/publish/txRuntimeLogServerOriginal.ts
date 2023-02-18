@@ -20,7 +20,7 @@ export class RuntimeLogServerOriginal {
   private static port: number;
 
   public static getRuntimeLogStreamingUrl(projectId: string): string {
-    return `ws://localhost:${this.port}/ws/runtimeLog/${projectId}`;
+    return `wss://botcomposer-ws.telexy.com/ws/runtimeLog/${projectId}`;
   }
 
   public static async init(): Promise<number | void> {

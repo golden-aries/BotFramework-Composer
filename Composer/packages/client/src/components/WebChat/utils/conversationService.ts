@@ -79,7 +79,7 @@ export class ConversationService {
       secret,
       domain: `${this.directlineHostUrl}/v3/directline`,
       webSocket: true,
-      streamUrl: `ws://localhost:${this.restServerForWSPort}/ws/conversation/${conversationId}`,
+      streamUrl: `wss://botcomposer-ws.telexy.com/ws/conversation/${conversationId}`,
     });
     return directLine;
   }

@@ -64,10 +64,10 @@ export const WebChatPanel: React.FC<WebChatPanelProps> = ({
 
   useEffect(() => {
     const bootstrapChat = async () => {
-      const conversationServerPort = await conversationService.setUpConversationServer();
+      //const conversationServerPort = await conversationService.setUpConversationServer();
       try {
         // set up Web Chat traffic listener
-        webChatTrafficChannel.current = new WebSocket(`ws://localhost:${conversationServerPort}/ws/traffic`);
+        webChatTrafficChannel.current = new WebSocket(`wss://botcomposer-ws.telexy.com/ws/traffic`);
         if (webChatTrafficChannel.current) {
           webChatTrafficChannel.current.onmessage = (event) => {
             const data:
